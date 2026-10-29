@@ -1,6 +1,9 @@
 # BloomCraft AI &mdash; Cognitive Examination Engineering System
 
 <p align="center">
+  <a href="https://github.com/PranavSuryawanshi11/Blooms-Taxonomy/actions/workflows/ci.yml" target="_blank">
+    <img src="https://img.shields.io/github/actions/workflow/status/PranavSuryawanshi11/Blooms-Taxonomy/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status">
+  </a>
   <a href="https://blooms-taxonomy.onrender.com/" target="_blank">
     <img src="https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo">
   </a>
@@ -69,6 +72,8 @@ The system is deployed and available live on Render:
 👉 **[https://blooms-taxonomy.onrender.com/](https://blooms-taxonomy.onrender.com/)**
 
 Academic faculty and evaluators can explore the complete examination engineering workflow, upload syllabus documents, configure cognitive blueprint matrices, and synthesize AICTE-compliant question papers directly in the cloud.
+> [!NOTE]
+> **Ephemeral Storage Notice on Render Free Tier**: The live demo on Render uses an ephemeral disk. Any faculty test accounts or examination history generated during evaluation will reset when the free-tier service restarts or redeploys. For persistent institutional use, configure persistent disk storage or run locally with SQLite.
 
 ---
 
@@ -98,7 +103,7 @@ flowchart TD
         Engine["bloom_engine.py (Taxonomy Engine & Calibration)"]
         BP_Engine["blueprint_builder.py (Section & Choice Allocation)"]
         QGen["question_generator.py (Prompt Engineering)"]
-        LLM["llm_client.py (Zero-Dependency Free-Tier Failover)"]
+        LLM["llm_client.py (Lightweight Native Free-Tier Failover)"]
         Diag["figure_generator.py & diagram_ai.py (Algorithmic SVG Synthesis)"]
         Export["export_service.py (Word DOCX & OBE Matrices)"]
     end
@@ -165,6 +170,8 @@ flowchart TD
 
 ```text
 ├── .github/
+│   ├── workflows/
+│   │   └── ci.yml                     # Continuous Integration workflow (Python 3.11)
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md              # Standardized bug reporting template
 │   │   └── feature_request.md         # Feature enhancement proposal template
@@ -182,7 +189,7 @@ flowchart TD
 │   │   ├── export_service.py          # Word DOCX generation with AICTE matrix tables
 │   │   ├── figure_generator.py        # Algorithmic SVG diagram rendering engine
 │   │   ├── figure_planner.py          # Prompt analysis and diagram candidate identification
-│   │   ├── llm_client.py              # Zero-dependency multi-provider LLM client with runtime failover
+│   │   ├── llm_client.py              # Lightweight multi-provider LLM client with runtime failover
 │   │   ├── question_generator.py      # Prompt builder and question synthesizer
 │   │   └── syllabus_parser.py         # PDF syllabus extractor and module segmenter
 │   ├── data/
@@ -193,6 +200,12 @@ flowchart TD
 │   ├── test_auth_history_integration.py # Auth and history service integration tests
 │   ├── test_e2e_live.py               # End-to-end question paper workflow tests
 │   └── test_generator.py              # Cognitive paper generation unit tests
+│
+├── tests/                             # Automated test suite (Smoke, Unit, Mocked LLM)
+│   ├── conftest.py                    # Pytest test fixtures and Flask app harness
+│   ├── test_smoke.py                  # API endpoints and route availability tests
+│   ├── test_generation.py             # Deterministic blueprint & mocked LLM tests
+│   └── test_e2e_live_skipped.py       # Live E2E test runner (conditional)
 │
 ├── frontend/
 │   ├── index.html                     # Single-page application interface and auth portal
@@ -215,7 +228,10 @@ flowchart TD
 ├── CONTRIBUTING.md                    # Developer and contribution guidelines
 ├── LICENSE                            # Strict Non-Commercial Source-Available License
 ├── package_project.py                 # Clean distribution zip packaging utility
+├── pytest.ini                         # Pytest test discovery and configuration
 ├── requirements.txt                   # Production Python dependencies
+├── requirements-dev.txt               # Development, testing, and linting dependencies
+├── CHANGELOG.md                       # Release notes and version history
 ├── SECURITY.md                        # Responsible vulnerability disclosure policy
 └── README.md                          # Project documentation
 ```
@@ -294,6 +310,10 @@ You only need **at least ONE** free-tier API key configured to generate examinat
 | **Cerebras Cloud** | `llama3.1-8b`, `llama3.1-70b` | [cloud.cerebras.ai](https://cloud.cerebras.ai) | Ultra-low latency wafer-scale inference engine |
 | **Mistral AI** | `mistral-small-latest`, `codestral-latest` | [console.mistral.ai](https://console.mistral.ai) | Free Experiment plan with high academic reasoning |
 
+
+> [!NOTE]
+> **Provider Priority vs. Recommendation**: While **Groq Cloud** is marked as *(Recommended)* due to inference speed and generous free limits, the engine's built-in default fallback priority sequence is `mistral,cerebras,groq,openrouter` if multiple keys are provided. You can customize your preference using `BLOOMCRAFT_LLM_ORDER` in `.env`.
+
 ### 3. Environment Variables Reference
 
 Edit `.env` in the project root:
@@ -323,7 +343,7 @@ PORT=5000
 FLASK_DEBUG=0
 ```
 
-> **🛡️ Security Guarantee**: The `.env` file contains secret credentials and is strictly ignored in [`.gitignore`](.gitignore). **It is never committed or pushed to GitHub.** Only [`.env.example`](.env.example) is committed as a clean template.
+> **🛡️ Security Best Practice**: Secret API credentials belong strictly in your local `.env` file, which is excluded from version control via [`.gitignore`](.gitignore). A template is provided in [`.env.example`](.env.example) for reference.
 
 ---
 
@@ -350,6 +370,11 @@ FLASK_DEBUG=0
 To verify backend modules, cognitive calibration, and user authentication isolation:
 ```bash
 # Test Faculty Authentication and Isolated Paper History
+# Run Unit & Smoke Test Suite with Pytest (Offline & Fast)
+pip install -r requirements-dev.txt
+pytest tests/ -v
+
+# Run Legacy Integration Test Scripts
 python backend/test_auth_history_integration.py
 
 # Test Question Generation & Bloom Distribution Validation
@@ -374,7 +399,7 @@ python backend/test_e2e_live.py
 <a id="contributing-code-of-conduct"></a>
 ## 🤝 Contributing & Code of Conduct
 
-We welcome community feedback, issue reports, and non-commercial open-source enhancements.
+We welcome community feedback, issue reports, and non-commercial contributions under our source-available license.
 - Please review our [CONTRIBUTING.md](CONTRIBUTING.md) before submitting Pull Requests.
 - Participants are expected to adhere to the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
