@@ -164,7 +164,6 @@ python backend/test_e2e_live.py
 
 ## 🔒 Security & Privacy
 
-- **Zero-Credential Commits**: Secret `.env` files are ignored across all folders by `.gitignore`.
 - **Faculty Data Isolation**: Faculty accounts and generated history are stored locally in `backend/data/user_store.json` (which is also ignored from version control).
 - **PBKDF2 Password Hashing**: Passwords are saved with cryptographically secure salted hashes (`PBKDF2-SHA256` with 120,000 iterations).
 
