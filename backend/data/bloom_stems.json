@@ -1,0 +1,135 @@
+{
+  "L1": {
+    "level": "L1",
+    "name": "Remembering",
+    "aicte_descriptor": "Recalling from the memory of the previously learned material",
+    "verbs": ["Define", "List", "State", "Identify", "Name", "Recall", "Recognize", "Match", "Label", "Select", "Outline", "Arrange", "Describe", "Duplicate", "Memorize", "Order", "Relate", "Repeat", "Reproduce"],
+    "templates_short": [
+      "{verb} the fundamental principles and characteristics of {topic}.",
+      "{verb} the primary components and terminology associated with {topic}.",
+      "{verb} any four key properties or architectural elements of {topic}.",
+      "{verb} the formal definition and standard representation of {topic}.",
+      "Define the term {topic} and {verb} its primary operational significance.",
+      "{verb} the distinct categories or types into which {topic} is classified."
+    ],
+    "templates_medium": [
+      "{verb} {topic} and list its essential building blocks along with their individual functions.",
+      "{verb} the fundamental rules, mathematical formulas, or axioms associated with {topic}.",
+      "{verb} the sequence of operational phases involved in {topic}.",
+      "{verb} the primary advantages, features, and known limitations of using {topic}."
+    ]
+  },
+  "L2": {
+    "level": "L2",
+    "name": "Understanding",
+    "aicte_descriptor": "Explaining ideas or concepts",
+    "verbs": ["Explain", "Describe", "Summarize", "Paraphrase", "Illustrate", "Classify", "Convert", "Defend", "Discuss", "Distinguish", "Estimate", "Express", "Extend", "Generalize", "Give example", "Identify", "Indicate", "Infer", "Locate", "Predict", "Recognize", "Rewrite", "Review", "Select", "Translate"],
+    "templates_short": [
+      "{verb} the working mechanism of {topic} with a suitable illustrative example or diagram.",
+      "{verb} how {topic} operates and explain why it is essential in modern computing.",
+      "{verb} the variants and classifications of {topic}, highlighting their distinctive features.",
+      "{verb} the main principles and conceptual foundations that govern {topic}."
+    ],
+    "templates_medium": [
+      "{verb} in detail the architecture and step-by-step workflow of {topic} with a neat schematic sketch.",
+      "{verb} the behavior of {topic} against conventional baseline techniques with respect to efficiency and complexity.",
+      "{verb} the internal mechanism of {topic}. How does it handle edge conditions or boundary inputs?",
+      "{verb} the structural organization of {topic} and trace how information flows across its different layers.",
+      "{verb} the concept of {topic} using a real-world scenario (such as e-commerce, banking, or cloud services)."
+    ]
+  },
+  "L3": {
+    "level": "L3",
+    "name": "Applying",
+    "aicte_descriptor": "Using the information in another familiar situation",
+    "verbs": ["Apply", "Solve", "Compute", "Demonstrate", "Construct", "Use", "Calculate", "Determine", "Change", "Choose", "Discover", "Dramatize", "Employ", "Illustrate", "Interpret", "Manipulate", "Modify", "Operate", "Practice", "Predict", "Prepare", "Produce", "Relate", "Schedule", "Show", "Sketch", "Write"],
+    "templates_medium": [
+      "{verb} the principles of {topic} to solve the computational problem for the given dataset: {parameters}. Show all intermediate steps.",
+      "{verb} the step-by-step execution of {topic} for: {parameters}. Trace the resultant state transitions.",
+      "{verb} the expected output and execution cost when {topic} is applied to a workload with {parameters}.",
+      "{verb} a formal procedure or algorithm to implement {topic} for an application requiring high throughput.",
+      "{verb} the resultant outcome when {topic} processes an input sequence of {parameters}. Provide clear justification for each transition."
+    ],
+    "templates_long": [
+      "A software system experiences high latency under heavy concurrency. {verb} the mechanics of {topic} to resolve this bottleneck. Show step-by-step computation, state transitions, and the final stabilized configuration.",
+      "Given the problem specification with parameters: {parameters}, {verb} a rigorous mathematical or algorithmic solution employing {topic}. Provide the step-by-step trace table and quantify final performance.",
+      "{verb} the complete logical workflow for {topic} assuming input constraints: {parameters}. Verify your solution with a dry run on boundary test cases."
+    ]
+  },
+  "L4": {
+    "level": "L4",
+    "name": "Analyzing",
+    "aicte_descriptor": "Breaking information into the part to explore understandings and relationships",
+    "verbs": ["Analyze", "Categorize", "Compare", "Contrast", "Separate", "Differentiate", "Deconstruct", "Distinguish", "Investigate", "Apply", "Change", "Discover", "Choose", "Compute", "Demonstrate", "Dramatize", "Employ", "Illustrate", "Interpret", "Manipulate", "Modify", "Operate", "Practice", "Predict", "Prepare", "Produce", "Relate", "Schedule", "Show", "Sketch", "Solve", "Use", "Write"],
+    "templates_medium": [
+      "{verb} the asymptotic time and space trade-offs in {topic} when scaled to massive workloads.",
+      "{verb} thoroughly between {topic} and rival paradigms across latency, storage overhead, and fault resilience.",
+      "{verb} the operational stages of {topic} and analyze where critical bottlenecks or race conditions are most likely to emerge.",
+      "{verb} the impact of parameter variations on the stability, accuracy, and correctness of {topic}."
+    ],
+    "templates_long": [
+      "{verb} the internal trade-offs of {topic} under varying workload densities: {scenario}. Quantify resource utilization, worst-case complexity, and provide analytical proof supporting your findings.",
+      "{verb} a critical failure scenario in a production cluster utilizing {topic}. Deconstruct the root causes, analyze the failure propagation path, and establish the structural weaknesses that triggered the breakdown.",
+      "{verb} the behavior of {topic} with respect to consistency versus availability. How does altering the underlying parameters influence operational throughput under peak loads?"
+    ]
+  },
+  "L5": {
+    "level": "L5",
+    "name": "Evaluating",
+    "aicte_descriptor": "Justifying a decision or course of action",
+    "verbs": ["Evaluate", "Justify", "Assess", "Critique", "Appraise", "Defend", "Judge", "Recommend", "Argue", "Attach", "Choose", "Compare", "Conclude", "Contrast", "Describe", "Discriminate", "Estimate", "Explain", "Interpret", "Relate", "Predict", "Rate", "Select", "Summarize", "Support", "Value"],
+    "templates_medium": [
+      "{verb} the standard implementation of {topic}. Identify its major vulnerabilities and justify possible remedial measures.",
+      "{verb} whether an enterprise engineering team should adopt or reject {topic} for mission-critical real-time processing in {scenario}.",
+      "{verb} the performance metrics of {topic} based on benchmark criteria including throughput, latency, precision, and reliability.",
+      "{verb} the trade-offs between computational overhead and security guarantees in {topic}."
+    ],
+    "templates_long": [
+      "An organization is modernizing its mission-critical infrastructure ({scenario}). Two alternative architectures are proposed, one centered on {topic} and another on baseline protocols. {verb} both options across scalability, fault tolerance, maintenance cost, and compliance, providing a definitive justified recommendation.",
+      "{verb} the resilience of {topic} under adversarial conditions and high-concurrency stress. Formulate an empirical assessment framework and defend whether the system meets strict SLA targets (99.99% uptime).",
+      "{verb} the theoretical limitations of {topic}. Justify with quantitative arguments why certain industry benchmarks fail to reflect real-world execution costs."
+    ]
+  },
+  "L6": {
+    "level": "L6",
+    "name": "Creating",
+    "aicte_descriptor": "Generating new ideas, products or new ways of viewing things",
+    "verbs": ["Create", "Design", "Hypothesize", "Invent", "Develop", "Arrange", "Assemble", "Categorize", "Collect", "Combine", "Comply", "Construct", "Devise", "Explain", "Formulate", "Generate", "Plan", "Prepare", "Rearrange", "Reconstruct", "Relate", "Reorganize", "Revise", "Rewrite", "Set up", "Summarize", "Synthesize", "Tell", "Write"],
+    "templates_medium": [
+      "{verb} a robust modular architecture utilizing {topic} that guarantees high availability and zero data loss in {scenario}.",
+      "{verb} a novel algorithmic strategy or workflow incorporating {topic} to optimize resource allocation in distributed networks.",
+      "{verb} an end-to-end framework integrating {topic} into a modern microservices ecosystem with automated failover.",
+      "{verb} a comprehensive testing and validation scheme to verify the behavioral integrity of a system based on {topic}."
+    ],
+    "templates_long": [
+      "You are the chief systems architect tasked with designing a next-generation platform for {scenario}. {verb} a comprehensive system blueprint that leverages {topic}. Your proposal must detail the schema/component design, inter-module communication protocols, fault-tolerance mechanisms, data consistency guarantees, and scalability roadmap.",
+      "{verb} and synthesize an innovative hybrid model combining {topic} with intelligent predictive caching. Provide the complete architectural schematic, component interfaces, state transition equations, and deployment topology.",
+      "{verb} an original algorithmic blueprint that enhances {topic} to operate efficiently under constrained edge-computing environments with strict energy and bandwidth limitations."
+    ]
+  },
+  "scenarios": [
+    "a high-frequency algorithmic financial exchange processing 500,000 transactions/second",
+    "a distributed patient monitoring telemetry system in an intensive healthcare network",
+    "an autonomous fleet logistics and route optimization platform managing 50,000 delivery vehicles",
+    "a planetary-scale video streaming content delivery network (CDN) during peak broadcast events",
+    "a mission-critical aerospace avionics telemetry and real-time flight control subsystem",
+    "a decentralized smart-meter electrical grid managing renewable energy load balancing",
+    "a zero-trust banking authentication gateway handling federated multi-factor transactions",
+    "a global e-commerce inventory engine with real-time flash-sale concurrency management",
+    "an intelligent predictive clinical diagnostic pipeline for multi-class pathology screening",
+    "an automated credit fraud risk classification engine trained on imbalanced transactional streams"
+  ],
+  "parameter_samples": [
+    "Input size N = 10^6, cache block size = 64 bytes, and associative degree k = 4",
+    "Arrival times {0, 2, 4, 6, 8} with burst durations {3ms, 6ms, 4ms, 5ms, 2ms}",
+    "Relation R(A, B, C, D, E) with Functional Dependencies F = {A->BC, CD->E, B->D, E->A}",
+    "Weights W = {2, 3, 4, 5, 9} and Values V = {3, 4, 5, 8, 10} with knapsack capacity C = 15",
+    "Graph vertices V = {v1, v2, v3, v4, v5} with directed weighted edge matrix and cost bounds",
+    "Transaction schedule S1: R1(A), R2(B), W1(A), R2(A), W2(B), Commit1, Commit2",
+    "Memory partition segments: [100KB, 500KB, 200KB, 300KB, 600KB] for jobs [212KB, 417KB, 112KB, 426KB]",
+    "Training dataset with 10 features, 5% class imbalance, and 100,000 observations",
+    "Class 1 = {(2,3), (3,2), (3,4), (2,2)} and Class 2 = {(7,8), (8,7), (8,9), (7,7)} for query point (4,5)",
+    "Contingency matrix with 120 total samples: TP=60, TN=100, actual positives=80, actual negatives=120",
+    "Samples I (N=9, Mean=68, SS=36) and Sample II (N=9, Mean=69, SS=40) under significance level alpha=0.05"
+  ]
+}

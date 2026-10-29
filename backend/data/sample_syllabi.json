@@ -1,0 +1,402 @@
+[
+  {
+    "id": "dbms",
+    "code": "CS501",
+    "name": "Database Management Systems",
+    "department": "Computer Science & Engineering",
+    "semester": "Semester V",
+    "credits": 4,
+    "course_outcomes": [
+      {"id": "CO1", "description": "Understand core database concepts, relational data models, and ER schema design."},
+      {"id": "CO2", "description": "Formulate complex relational algebra expressions and advanced SQL queries."},
+      {"id": "CO3", "description": "Apply relational database design theory, functional dependencies, and normal forms (1NF to BCNF)."},
+      {"id": "CO4", "description": "Analyze transaction processing concepts, ACID properties, concurrency control protocols, and recovery systems."},
+      {"id": "CO5", "description": "Evaluate indexing mechanisms (B+ trees, hashing), query optimization, and modern NoSQL architectures."}
+    ],
+    "units": [
+      {
+        "unit_num": 1,
+        "title": "Introduction & Entity-Relationship Modeling",
+        "co": "CO1",
+        "topics": [
+          "Database System Concepts and Architecture",
+          "Data Models and Schemas",
+          "Three-Schema Architecture and Data Independence",
+          "Entity-Relationship (ER) Model: Entities, Attributes, and Relationships",
+          "Extended ER (EER) Modeling: Specialization, Generalization, and Aggregation",
+          "Conversion of ER/EER Diagrams to Relational Tables"
+        ]
+      },
+      {
+        "unit_num": 2,
+        "title": "Relational Model, Relational Algebra & SQL",
+        "co": "CO2",
+        "topics": [
+          "Relational Model Constraints and Relational Database Schemas",
+          "Relational Algebra Operations: Selection, Projection, Cartesian Product, Join, and Division",
+          "Tuple Relational Calculus and Domain Relational Calculus",
+          "Data Definition Language (DDL) and Data Manipulation Language (DML) in SQL",
+          "Nested Queries, Correlated Subqueries, Aggregate Functions, and Grouping (GROUP BY, HAVING)",
+          "Triggers, Assertions, Views, and Security Authorizations"
+        ]
+      },
+      {
+        "unit_num": 3,
+        "title": "Database Design Theory & Normalization",
+        "co": "CO3",
+        "topics": [
+          "Informal Design Guidelines for Relation Schemas",
+          "Functional Dependencies and Inference Rules (Armstrong's Axioms)",
+          "Normal Forms: First Normal Form (1NF), Second Normal Form (2NF), and Third Normal Form (3NF)",
+          "Boyce-Codd Normal Form (BCNF)",
+          "Multi-valued Dependencies and Fourth Normal Form (4NF)",
+          "Lossless-Join Decomposition and Dependency Preservation"
+        ]
+      },
+      {
+        "unit_num": 4,
+        "title": "Transaction Processing & Concurrency Control",
+        "co": "CO4",
+        "topics": [
+          "Transaction Concepts, States, and ACID Properties",
+          "Concurrent Executions, Schedules, and Serializability (Conflict and View Serializability)",
+          "Concurrency Control: Two-Phase Locking (2PL) Protocol (Strict, Rigorous)",
+          "Timestamp Ordering and Multiversion Concurrency Control Protocols",
+          "Deadlock Handling: Prevention, Detection, and Recovery Strategies",
+          "Database Failure Types, Log-Based Recovery, and Checkpointing Algorithms"
+        ]
+      },
+      {
+        "unit_num": 5,
+        "title": "Storage, Indexing, Query Optimization & NoSQL",
+        "co": "CO5",
+        "topics": [
+          "File Organizations: Ordered vs Unordered Records, Hashing Techniques",
+          "Single-Level and Multi-Level Indexing: Primary, Clustering, and Secondary Indexes",
+          "B-Trees and B+ Tree Index Structures (Search, Insert, and Delete Algorithms)",
+          "Query Processing Steps and Cost-Based Query Optimization",
+          "Introduction to NoSQL Databases: Key-Value, Document, Column-Oriented, and Graph Databases",
+          "CAP Theorem and BASE Consistency Model"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "os",
+    "code": "CS502",
+    "name": "Operating Systems",
+    "department": "Computer Science & Engineering",
+    "semester": "Semester V",
+    "credits": 4,
+    "course_outcomes": [
+      {"id": "CO1", "description": "Explain the architecture, system calls, and structure of modern operating systems."},
+      {"id": "CO2", "description": "Analyze CPU scheduling algorithms and process synchronization mechanisms."},
+      {"id": "CO3", "description": "Formulate deadlock prevention, avoidance (Banker's Algorithm), and detection techniques."},
+      {"id": "CO4", "description": "Apply memory management techniques including paging, segmentation, and virtual memory page replacement."},
+      {"id": "CO5", "description": "Evaluate file systems, disk scheduling algorithms, and OS protection mechanisms."}
+    ],
+    "units": [
+      {
+        "unit_num": 1,
+        "title": "OS Overview & Process Management",
+        "co": "CO1",
+        "topics": [
+          "Operating System Structures, Dual-Mode Operation, and System Calls",
+          "Process Concept, Process States, and Process Control Block (PCB)",
+          "Process Scheduling: Queues, Schedulers, and Context Switching",
+          "Inter-Process Communication (IPC): Shared Memory and Message Passing",
+          "Multithreading Models: User-Level and Kernel-Level Threads"
+        ]
+      },
+      {
+        "unit_num": 2,
+        "title": "CPU Scheduling & Process Synchronization",
+        "co": "CO2",
+        "topics": [
+          "CPU Scheduling Criteria: Turnaround Time, Waiting Time, and Response Time",
+          "Scheduling Algorithms: FCFS, SJF, Priority Scheduling, and Round Robin",
+          "The Critical Section Problem and Peterson's Algorithm Solution",
+          "Hardware Synchronization (TestAndSet, Swap) and Semaphores (Counting and Binary)",
+          "Classical Synchronization Problems: Producer-Consumer, Dining Philosophers, and Readers-Writers"
+        ]
+      },
+      {
+        "unit_num": 3,
+        "title": "Deadlocks & Resource Allocation",
+        "co": "CO3",
+        "topics": [
+          "System Model and Four Coffman Necessary Conditions for Deadlock",
+          "Resource-Allocation Graphs (RAG) and Cycle Detection",
+          "Deadlock Prevention and Elimination of Mutual Exclusion/Hold and Wait",
+          "Deadlock Avoidance: Banker's Algorithm for Safety and Resource Request",
+          "Deadlock Detection Algorithms and Recovery from Deadlock"
+        ]
+      },
+      {
+        "unit_num": 4,
+        "title": "Memory Management & Virtual Memory",
+        "co": "CO4",
+        "topics": [
+          "Logical vs Physical Address Space, Dynamic Loading, and Swapping",
+          "Contiguous Memory Allocation: First-Fit, Best-Fit, Worst-Fit, and Fragmentation",
+          "Non-Contiguous Allocation: Paging Mechanism, Page Table Structure, and TLB",
+          "Segmentation with Paging Architecture",
+          "Virtual Memory: Demand Paging and Page Fault Handling Routine",
+          "Page Replacement Algorithms: FIFO, Optimal (OPT), and Least Recently Used (LRU)",
+          "Thrashing, Working-Set Model, and Page-Fault Frequency"
+        ]
+      },
+      {
+        "unit_num": 5,
+        "title": "Storage Management & File Systems",
+        "co": "CO5",
+        "topics": [
+          "File Concepts, Access Methods, and Directory Structures (Single-level to Tree)",
+          "File System Mounting, Allocation Methods: Contiguous, Linked, and Indexed Allocation",
+          "Free Space Management: Bit Vectors and Linked Lists",
+          "Disk Structure and Disk Scheduling Algorithms: FCFS, SSTF, SCAN, C-SCAN, and LOOK",
+          "RAID Levels and Data Redundancy Strategies"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "daa",
+    "code": "CS503",
+    "name": "Design & Analysis of Algorithms",
+    "department": "Computer Science & Engineering",
+    "semester": "Semester V",
+    "credits": 4,
+    "course_outcomes": [
+      {"id": "CO1", "description": "Determine asymptotic time and space complexities using Big-O, Omega, and Master Theorem."},
+      {"id": "CO2", "description": "Design efficient algorithms using Divide-and-Conquer paradigms."},
+      {"id": "CO3", "description": "Apply Greedy strategies and Dynamic Programming to optimization problems."},
+      {"id": "CO4", "description": "Formulate Backtracking and Branch-and-Bound algorithms for combinatorial challenges."},
+      {"id": "CO5", "description": "Classify computational complexity into P, NP, NP-Complete, and NP-Hard classes."}
+    ],
+    "units": [
+      {
+        "unit_num": 1,
+        "title": "Algorithm Analysis & Recurrences",
+        "co": "CO1",
+        "topics": [
+          "Asymptotic Notations: Big-O, Big-Omega, Big-Theta, Little-o, and Little-omega",
+          "Worst-case, Average-case, and Best-case Analysis of Algorithms",
+          "Solving Recurrence Relations: Substitution Method and Recursion-Tree Method",
+          "Master Theorem for Divide-and-Conquer Recurrences",
+          "Amortized Analysis: Aggregate, Accounting, and Potential Methods"
+        ]
+      },
+      {
+        "unit_num": 2,
+        "title": "Divide and Conquer & Sorting Lower Bounds",
+        "co": "CO2",
+        "topics": [
+          "Divide-and-Conquer Design Strategy and Recurrence Formulation",
+          "Merge Sort and Quick Sort (Partitioning Analysis and Randomized Pivot)",
+          "Binary Search and Finding Min-Max Element Simultaneously",
+          "Strassen's Matrix Multiplication Algorithm",
+          "Lower Bounds for Comparison-Based Sorting (Decision Tree Model)"
+        ]
+      },
+      {
+        "unit_num": 3,
+        "title": "Greedy Method & Dynamic Programming",
+        "co": "CO3",
+        "topics": [
+          "Greedy Strategy Principles and Optimal Substructure Property",
+          "Fractional Knapsack Problem and Job Sequencing with Deadlines",
+          "Minimum Spanning Trees: Kruskal's (Union-Find) and Prim's Algorithms",
+          "Dijkstra's Single-Source Shortest Path Algorithm",
+          "Dynamic Programming Strategy: Memoization vs Tabulation",
+          "0/1 Knapsack Problem and Matrix Chain Multiplication",
+          "Longest Common Subsequence (LCS) and Floyd-Warshall All-Pairs Shortest Path"
+        ]
+      },
+      {
+        "unit_num": 4,
+        "title": "Backtracking & Branch and Bound",
+        "co": "CO4",
+        "topics": [
+          "State Space Tree Representation and Depth-First Search Exploration",
+          "The N-Queens Problem (State Space Formulation and Pruning)",
+          "Sum of Subsets Problem and Graph Coloring Problem",
+          "Hamiltonian Cycles Problem",
+          "Branch and Bound Technique: FIFO, LIFO, and Least-Cost (LC) Search",
+          "Traveling Salesperson Problem (TSP) using Branch and Bound"
+        ]
+      },
+      {
+        "unit_num": 5,
+        "title": "Tractable & Intractable Problems (NP-Completeness)",
+        "co": "CO5",
+        "topics": [
+          "Deterministic vs Non-Deterministic Algorithms",
+          "Complexity Classes: P, NP, NP-Hard, and NP-Complete",
+          "Polynomial-Time Reductions and Proof Techniques",
+          "Cook-Levin Theorem and Satisfiability (SAT) Problem",
+          "Proving NP-Completeness for 3-SAT, Clique, Vertex Cover, and Subset-Sum",
+          "Approximation Algorithms for NP-Hard Problems (Vertex Cover & Metric TSP)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "webtech",
+    "code": "CS504",
+    "name": "Web Technologies & Cloud Computing",
+    "department": "Computer Science & Engineering",
+    "semester": "Semester V",
+    "credits": 3,
+    "course_outcomes": [
+      {"id": "CO1", "description": "Construct accessible, modern web interfaces using HTML5, CSS3, and JavaScript."},
+      {"id": "CO2", "description": "Develop dynamic server-side applications using RESTful web services and asynchronous APIs."},
+      {"id": "CO3", "description": "Implement client-server security protocols, authentication (JWT/OAuth), and session management."},
+      {"id": "CO4", "description": "Evaluate cloud service models (IaaS, PaaS, SaaS) and deployment architectures."},
+      {"id": "CO5", "description": "Design scalable microservices, containerization using Docker, and serverless workflows."}
+    ],
+    "units": [
+      {
+        "unit_num": 1,
+        "title": "Frontend Architecture & Modern JavaScript",
+        "co": "CO1",
+        "topics": [
+          "HTML5 Semantic Elements and Document Object Model (DOM) Tree",
+          "CSS3 Flexbox, Grid Layouts, and Responsive Design Media Queries",
+          "JavaScript ES6+ Features: Promises, Async/Await, Destructuring, and Closures",
+          "Event Bubbling, Event Capturing, and Event Delegation",
+          "Client-Side Storage: LocalStorage, SessionStorage, and IndexedDB"
+        ]
+      },
+      {
+        "unit_num": 2,
+        "title": "Asynchronous Communication & RESTful APIs",
+        "co": "CO2",
+        "topics": [
+          "HTTP/HTTPS Protocols, Request/Response Headers, and Status Codes",
+          "AJAX, Fetch API, and XMLHttpRequest Architecture",
+          "REST Architectural Constraints and CRUD Endpoint Design",
+          "JSON Serialization and Schema Validation",
+          "WebSockets for Real-Time Bidirectional Communication"
+        ]
+      },
+      {
+        "unit_num": 3,
+        "title": "Web Security, Authentication & Session Handling",
+        "co": "CO3",
+        "topics": [
+          "State Management: Cookies, Sessions, and Stateless Tokens",
+          "JSON Web Tokens (JWT) Structure and Verification Flow",
+          "OAuth 2.0 Authorization Code Grant Flow",
+          "Common Web Vulnerabilities: SQL Injection, Cross-Site Scripting (XSS), and CSRF",
+          "Content Security Policy (CSP) and Cross-Origin Resource Sharing (CORS)"
+        ]
+      },
+      {
+        "unit_num": 4,
+        "title": "Cloud Computing Fundamentals & Virtualization",
+        "co": "CO4",
+        "topics": [
+          "NIST Definition of Cloud Computing and Essential Characteristics",
+          "Cloud Service Models: IaaS, PaaS, and SaaS Architectures and Comparison",
+          "Cloud Deployment Models: Public, Private, Hybrid, and Multi-Cloud",
+          "Hardware Virtualization: Hypervisor Type-1 and Type-2 Architectures",
+          "Virtual Machine Migration and Resource Provisioning"
+        ]
+      },
+      {
+        "unit_num": 5,
+        "title": "Microservices, Containers & Serverless",
+        "co": "CO5",
+        "topics": [
+          "Monolithic vs Microservices Architecture Patterns",
+          "Containerization Principles: Linux Namespaces, Cgroups, and Docker Architecture",
+          "Dockerfile Creation, Image Layering, and Container Lifecycle",
+          "Introduction to Container Orchestration using Kubernetes",
+          "Serverless Computing and Function-as-a-Service (FaaS) Execution Model"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aiml",
+    "code": "CS505",
+    "name": "Artificial Intelligence & Machine Learning",
+    "department": "Computer Science & Engineering",
+    "semester": "Semester V",
+    "credits": 4,
+    "course_outcomes": [
+      {"id": "CO1", "description": "Formulate state-space search algorithms and heuristic evaluations for problem solving."},
+      {"id": "CO2", "description": "Apply supervised learning algorithms for regression and classification tasks."},
+      {"id": "CO3", "description": "Analyze unsupervised clustering, dimensionality reduction, and model evaluation metrics."},
+      {"id": "CO4", "description": "Construct neural network architectures and backpropagation learning models."},
+      {"id": "CO5", "description": "Evaluate reinforcement learning agents and generative AI ethical considerations."}
+    ],
+    "units": [
+      {
+        "unit_num": 1,
+        "title": "Problem Formulation & Heuristic Search",
+        "co": "CO1",
+        "topics": [
+          "Agents and Environments, Rationality, and PEAS Descriptions",
+          "Uninformed Search Strategies: Breadth-First Search, Depth-First Search, and Uniform-Cost Search",
+          "Informed (Heuristic) Search: Greedy Best-First Search and A* Search Algorithm",
+          "Admissibility and Consistency of Heuristics",
+          "Adversarial Search: Minimax Algorithm and Alpha-Beta Pruning"
+        ]
+      },
+      {
+        "unit_num": 2,
+        "title": "Supervised Learning: Regression & Classification",
+        "co": "CO2",
+        "topics": [
+          "Supervised Learning Workflow: Feature Vectors, Training, and Testing Splits",
+          "Linear Regression: Cost Function, Ordinary Least Squares, and Gradient Descent",
+          "Logistic Regression for Binary and Multi-Class Classification",
+          "Decision Tree Induction: Information Gain, Entropy, and Gini Impurity",
+          "Support Vector Machines (SVM): Hyperplane, Maximum Margin, and Kernel Trick",
+          "Ensemble Methods: Random Forests and Gradient Boosting"
+        ]
+      },
+      {
+        "unit_num": 3,
+        "title": "Unsupervised Learning & Model Validation",
+        "co": "CO3",
+        "topics": [
+          "Clustering Paradigms: K-Means Algorithm, Elbow Method, and Silhouette Score",
+          "Hierarchical Agglomerative Clustering and Dendrogram Analysis",
+          "Dimensionality Reduction: Principal Component Analysis (PCA) and Eigenvalues",
+          "Bias-Variance Tradeoff and Regularization (L1 Lasso, L2 Ridge)",
+          "Model Evaluation Metrics: Precision, Recall, F1-Score, ROC-AUC Curve, and Confusion Matrix",
+          "Cross-Validation Techniques (K-Fold, Stratified K-Fold)"
+        ]
+      },
+      {
+        "unit_num": 4,
+        "title": "Neural Networks & Deep Learning Foundations",
+        "co": "CO4",
+        "topics": [
+          "Biological vs Artificial Neuron: Perceptron Model and Activation Functions (Sigmoid, ReLU, Tanh, Softmax)",
+          "Multi-Layer Perceptron (MLP) Architecture and Feedforward Propagation",
+          "Backpropagation Algorithm Derivation using Chain Rule of Calculus",
+          "Loss Functions: Mean Squared Error (MSE) and Cross-Entropy Loss",
+          "Optimization Algorithms: Stochastic Gradient Descent (SGD), Momentum, and Adam Optimizer",
+          "Vanishing and Exploding Gradient Problems and Batch Normalization"
+        ]
+      },
+      {
+        "unit_num": 5,
+        "title": "Reinforcement Learning & AI Ethics",
+        "co": "CO5",
+        "topics": [
+          "Reinforcement Learning Elements: Agent, Environment, State, Action, and Reward",
+          "Markov Decision Processes (MDP) and Bellman Equations",
+          "Q-Learning Algorithm and Exploration-Exploitation Dilemma (Epsilon-Greedy)",
+          "Overview of Deep Q-Networks (DQN)",
+          "Fairness, Bias, Accountability, and Explainability in AI Models",
+          "Generative AI, Large Language Models (LLMs), and Ethical Safety Challenges"
+        ]
+      }
+    ]
+  }
+]

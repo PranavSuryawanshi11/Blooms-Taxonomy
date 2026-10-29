@@ -1,0 +1,464 @@
+{
+  "usr_turing_001": [
+    {
+      "set_id": "set_1",
+      "set_name": "Set 1 - Statistical Foundations & Tests",
+      "questions": [
+        {
+          "question_text": "Perform two-way ANOVA on the given agricultural table across treatments A, B, C, D and determine whether land blocks differ significantly.",
+          "marks": 8,
+          "bloom_level": "L3",
+          "aicte_verb": "Perform",
+          "co": "CO1",
+          "topic": "Two-Way ANOVA & Hypothesis Testing"
+        },
+        {
+          "question_text": "Perform Linear Discriminant Analysis (LDA) on Class 1 = {(2,3), (3,2), (3,4), (2,2)} and Class 2 = {(7,8), (8,7), (8,9), (7,7)} and classify query point (4,5).",
+          "marks": 8,
+          "bloom_level": "L3",
+          "aicte_verb": "Perform",
+          "co": "CO1",
+          "topic": "Linear Discriminant Analysis"
+        },
+        {
+          "question_text": "Calculate the third quartile and compute the probability that sample mean is between 110 to 120 hours for video projector bulbs with mean 100 hours and SD 75.",
+          "marks": 6,
+          "bloom_level": "L3",
+          "aicte_verb": "Calculate",
+          "co": "CO2",
+          "topic": "Normal Distribution & Quartiles"
+        },
+        {
+          "question_text": "Compute the 95% and 99% confidence limits of the cytokine response of mice given observation vector [0.2, 1.3, 1.4, 2.3, 4.2, 4.7, 4.7, 5.1].",
+          "marks": 4,
+          "bloom_level": "L3",
+          "aicte_verb": "Compute",
+          "co": "CO2",
+          "topic": "Confidence Intervals & Estimation"
+        }
+      ]
+    },
+    {
+      "set_id": "set_2",
+      "set_name": "Set 2 - Correlation, Regression & Variance",
+      "questions": [
+        {
+          "question_text": "Construct a 95% confidence interval for the population variance given sample variance 36 hours squared from 25 tested LED bulbs.",
+          "marks": 5,
+          "bloom_level": "L3",
+          "aicte_verb": "Construct",
+          "co": "CO2",
+          "topic": "Chi-Square Variance Estimation"
+        },
+        {
+          "question_text": "Calculate Spearman's Rank Correlation Coefficient with tie corrections for Math and Physics scores across the 6 students dataset.",
+          "marks": 6,
+          "bloom_level": "L3",
+          "aicte_verb": "Calculate",
+          "co": "CO3",
+          "topic": "Spearman Rank Correlation"
+        },
+        {
+          "question_text": "Determine the mean values, correlation coefficient, and standard deviation of Y given regression equations 7x - 5y + 14 = 0 and 28x - 25y - 35 = 0.",
+          "marks": 6,
+          "bloom_level": "L4",
+          "aicte_verb": "Determine",
+          "co": "CO3",
+          "topic": "Bivariate Linear Regression"
+        },
+        {
+          "question_text": "Explain the significance of ROC curve. Determine which model exhibits superior performance based on comparative AUC curves.",
+          "marks": 5,
+          "bloom_level": "L4",
+          "aicte_verb": "Explain",
+          "co": "CO4",
+          "topic": "ROC Analysis & Model Comparison"
+        }
+      ]
+    },
+    {
+      "set_id": "set_3",
+      "set_name": "Set 3 - Supervised Learning & Optimization",
+      "questions": [
+        {
+          "question_text": "Explain the concept of Inductive learning and describe any two types of Bias with real-world examples.",
+          "marks": 5,
+          "bloom_level": "L2",
+          "aicte_verb": "Explain",
+          "co": "CO1",
+          "topic": "Inductive Learning & Bias"
+        },
+        {
+          "question_text": "Construct the confusion matrix, calculate False Positive and False Negative metrics for the 200 email classification dataset.",
+          "marks": 5,
+          "bloom_level": "L3",
+          "aicte_verb": "Construct",
+          "co": "CO2",
+          "topic": "Classification Confusion Matrix"
+        },
+        {
+          "question_text": "Differentiate between Post Pruning and Pre-pruning methods of Decision Tree. Formulate how overfitting is detected.",
+          "marks": 10,
+          "bloom_level": "L4",
+          "aicte_verb": "Differentiate",
+          "co": "CO3",
+          "topic": "Decision Trees & Pruning"
+        },
+        {
+          "question_text": "Derive the optimization function for linear Support Vector Machine (SVM) and formulate the discriminant function.",
+          "marks": 10,
+          "bloom_level": "L5",
+          "aicte_verb": "Derive",
+          "co": "CO4",
+          "topic": "Support Vector Machines"
+        }
+      ]
+    },
+    {
+      "set_id": "set_4",
+      "set_name": "Set 4 - Clustering & Ensemble Methods",
+      "questions": [
+        {
+          "question_text": "Apply K-means algorithm on given 2D coordinates A(2,2), B(3,2), C(1,1), D(3,1), E(1.5,0.5) to partition into two clusters for two iterations.",
+          "marks": 10,
+          "bloom_level": "L3",
+          "aicte_verb": "Apply",
+          "co": "CO4",
+          "topic": "K-Means Coordinate Clustering"
+        },
+        {
+          "question_text": "Describe the architecture and voting mechanism of bagging in ensemble methods. Analyze the reduction in model variance.",
+          "marks": 10,
+          "bloom_level": "L4",
+          "aicte_verb": "Describe",
+          "co": "CO4",
+          "topic": "Ensemble Bagging & Random Forests"
+        },
+        {
+          "question_text": "Differentiate between Single Link, Complete Link, and Average Link agglomerative hierarchical clustering.",
+          "marks": 5,
+          "bloom_level": "L4",
+          "aicte_verb": "Differentiate",
+          "co": "CO4",
+          "topic": "Hierarchical Clustering"
+        },
+        {
+          "question_text": "Evaluate the clinical dataset with attributes [Cholesterol, Diabetic, Family History, Blood Pressure] and predict the risk label for test query point.",
+          "marks": 15,
+          "bloom_level": "L5",
+          "aicte_verb": "Evaluate",
+          "co": "CO5",
+          "topic": "Supervised Model Inference"
+        }
+      ]
+    }
+  ],
+  "usr_e8f981bd": [
+    {
+      "set_id": "set_1",
+      "set_name": "Set 1 - Statistical Foundations & Tests",
+      "questions": [
+        {
+          "question_text": "Perform two-way ANOVA on the given agricultural table across treatments A, B, C, D and determine whether land blocks differ significantly.",
+          "marks": 8,
+          "bloom_level": "L3",
+          "aicte_verb": "Perform",
+          "co": "CO1",
+          "topic": "Two-Way ANOVA & Hypothesis Testing"
+        },
+        {
+          "question_text": "Perform Linear Discriminant Analysis (LDA) on Class 1 = {(2,3), (3,2), (3,4), (2,2)} and Class 2 = {(7,8), (8,7), (8,9), (7,7)} and classify query point (4,5).",
+          "marks": 8,
+          "bloom_level": "L3",
+          "aicte_verb": "Perform",
+          "co": "CO1",
+          "topic": "Linear Discriminant Analysis"
+        },
+        {
+          "question_text": "Calculate the third quartile and compute the probability that sample mean is between 110 to 120 hours for video projector bulbs with mean 100 hours and SD 75.",
+          "marks": 6,
+          "bloom_level": "L3",
+          "aicte_verb": "Calculate",
+          "co": "CO2",
+          "topic": "Normal Distribution & Quartiles"
+        },
+        {
+          "question_text": "Compute the 95% and 99% confidence limits of the cytokine response of mice given observation vector [0.2, 1.3, 1.4, 2.3, 4.2, 4.7, 4.7, 5.1].",
+          "marks": 4,
+          "bloom_level": "L3",
+          "aicte_verb": "Compute",
+          "co": "CO2",
+          "topic": "Confidence Intervals & Estimation"
+        }
+      ]
+    },
+    {
+      "set_id": "set_2",
+      "set_name": "Set 2 - Correlation, Regression & Variance",
+      "questions": [
+        {
+          "question_text": "Construct a 95% confidence interval for the population variance given sample variance 36 hours squared from 25 tested LED bulbs.",
+          "marks": 5,
+          "bloom_level": "L3",
+          "aicte_verb": "Construct",
+          "co": "CO2",
+          "topic": "Chi-Square Variance Estimation"
+        },
+        {
+          "question_text": "Calculate Spearman's Rank Correlation Coefficient with tie corrections for Math and Physics scores across the 6 students dataset.",
+          "marks": 6,
+          "bloom_level": "L3",
+          "aicte_verb": "Calculate",
+          "co": "CO3",
+          "topic": "Spearman Rank Correlation"
+        },
+        {
+          "question_text": "Determine the mean values, correlation coefficient, and standard deviation of Y given regression equations 7x - 5y + 14 = 0 and 28x - 25y - 35 = 0.",
+          "marks": 6,
+          "bloom_level": "L4",
+          "aicte_verb": "Determine",
+          "co": "CO3",
+          "topic": "Bivariate Linear Regression"
+        },
+        {
+          "question_text": "Explain the significance of ROC curve. Determine which model exhibits superior performance based on comparative AUC curves.",
+          "marks": 5,
+          "bloom_level": "L4",
+          "aicte_verb": "Explain",
+          "co": "CO4",
+          "topic": "ROC Analysis & Model Comparison"
+        }
+      ]
+    },
+    {
+      "set_id": "set_3",
+      "set_name": "Set 3 - Supervised Learning & Optimization",
+      "questions": [
+        {
+          "question_text": "Explain the concept of Inductive learning and describe any two types of Bias with real-world examples.",
+          "marks": 5,
+          "bloom_level": "L2",
+          "aicte_verb": "Explain",
+          "co": "CO1",
+          "topic": "Inductive Learning & Bias"
+        },
+        {
+          "question_text": "Construct the confusion matrix, calculate False Positive and False Negative metrics for the 200 email classification dataset.",
+          "marks": 5,
+          "bloom_level": "L3",
+          "aicte_verb": "Construct",
+          "co": "CO2",
+          "topic": "Classification Confusion Matrix"
+        },
+        {
+          "question_text": "Differentiate between Post Pruning and Pre-pruning methods of Decision Tree. Formulate how overfitting is detected.",
+          "marks": 10,
+          "bloom_level": "L4",
+          "aicte_verb": "Differentiate",
+          "co": "CO3",
+          "topic": "Decision Trees & Pruning"
+        },
+        {
+          "question_text": "Derive the optimization function for linear Support Vector Machine (SVM) and formulate the discriminant function.",
+          "marks": 10,
+          "bloom_level": "L5",
+          "aicte_verb": "Derive",
+          "co": "CO4",
+          "topic": "Support Vector Machines"
+        }
+      ]
+    },
+    {
+      "set_id": "set_4",
+      "set_name": "Set 4 - Clustering & Ensemble Methods",
+      "questions": [
+        {
+          "question_text": "Apply K-means algorithm on given 2D coordinates A(2,2), B(3,2), C(1,1), D(3,1), E(1.5,0.5) to partition into two clusters for two iterations.",
+          "marks": 10,
+          "bloom_level": "L3",
+          "aicte_verb": "Apply",
+          "co": "CO4",
+          "topic": "K-Means Coordinate Clustering"
+        },
+        {
+          "question_text": "Describe the architecture and voting mechanism of bagging in ensemble methods. Analyze the reduction in model variance.",
+          "marks": 10,
+          "bloom_level": "L4",
+          "aicte_verb": "Describe",
+          "co": "CO4",
+          "topic": "Ensemble Bagging & Random Forests"
+        },
+        {
+          "question_text": "Differentiate between Single Link, Complete Link, and Average Link agglomerative hierarchical clustering.",
+          "marks": 5,
+          "bloom_level": "L4",
+          "aicte_verb": "Differentiate",
+          "co": "CO4",
+          "topic": "Hierarchical Clustering"
+        },
+        {
+          "question_text": "Evaluate the clinical dataset with attributes [Cholesterol, Diabetic, Family History, Blood Pressure] and predict the risk label for test query point.",
+          "marks": 15,
+          "bloom_level": "L5",
+          "aicte_verb": "Evaluate",
+          "co": "CO5",
+          "topic": "Supervised Model Inference"
+        }
+      ]
+    }
+  ],
+  "default": [
+    {
+      "set_id": "set_1",
+      "set_name": "Set 1 - Statistical Foundations & Tests",
+      "questions": [
+        {
+          "question_text": "Perform two-way ANOVA on the given agricultural table across treatments A, B, C, D and determine whether land blocks differ significantly.",
+          "marks": 8,
+          "bloom_level": "L3",
+          "aicte_verb": "Perform",
+          "co": "CO1",
+          "topic": "Two-Way ANOVA & Hypothesis Testing"
+        },
+        {
+          "question_text": "Perform Linear Discriminant Analysis (LDA) on Class 1 = {(2,3), (3,2), (3,4), (2,2)} and Class 2 = {(7,8), (8,7), (8,9), (7,7)} and classify query point (4,5).",
+          "marks": 8,
+          "bloom_level": "L3",
+          "aicte_verb": "Perform",
+          "co": "CO1",
+          "topic": "Linear Discriminant Analysis"
+        },
+        {
+          "question_text": "Calculate the third quartile and compute the probability that sample mean is between 110 to 120 hours for video projector bulbs with mean 100 hours and SD 75.",
+          "marks": 6,
+          "bloom_level": "L3",
+          "aicte_verb": "Calculate",
+          "co": "CO2",
+          "topic": "Normal Distribution & Quartiles"
+        },
+        {
+          "question_text": "Compute the 95% and 99% confidence limits of the cytokine response of mice given observation vector [0.2, 1.3, 1.4, 2.3, 4.2, 4.7, 4.7, 5.1].",
+          "marks": 4,
+          "bloom_level": "L3",
+          "aicte_verb": "Compute",
+          "co": "CO2",
+          "topic": "Confidence Intervals & Estimation"
+        }
+      ]
+    },
+    {
+      "set_id": "set_2",
+      "set_name": "Set 2 - Correlation, Regression & Variance",
+      "questions": [
+        {
+          "question_text": "Construct a 95% confidence interval for the population variance given sample variance 36 hours squared from 25 tested LED bulbs.",
+          "marks": 5,
+          "bloom_level": "L3",
+          "aicte_verb": "Construct",
+          "co": "CO2",
+          "topic": "Chi-Square Variance Estimation"
+        },
+        {
+          "question_text": "Calculate Spearman's Rank Correlation Coefficient with tie corrections for Math and Physics scores across the 6 students dataset.",
+          "marks": 6,
+          "bloom_level": "L3",
+          "aicte_verb": "Calculate",
+          "co": "CO3",
+          "topic": "Spearman Rank Correlation"
+        },
+        {
+          "question_text": "Determine the mean values, correlation coefficient, and standard deviation of Y given regression equations 7x - 5y + 14 = 0 and 28x - 25y - 35 = 0.",
+          "marks": 6,
+          "bloom_level": "L4",
+          "aicte_verb": "Determine",
+          "co": "CO3",
+          "topic": "Bivariate Linear Regression"
+        },
+        {
+          "question_text": "Explain the significance of ROC curve. Determine which model exhibits superior performance based on comparative AUC curves.",
+          "marks": 5,
+          "bloom_level": "L4",
+          "aicte_verb": "Explain",
+          "co": "CO4",
+          "topic": "ROC Analysis & Model Comparison"
+        }
+      ]
+    },
+    {
+      "set_id": "set_3",
+      "set_name": "Set 3 - Supervised Learning & Optimization",
+      "questions": [
+        {
+          "question_text": "Explain the concept of Inductive learning and describe any two types of Bias with real-world examples.",
+          "marks": 5,
+          "bloom_level": "L2",
+          "aicte_verb": "Explain",
+          "co": "CO1",
+          "topic": "Inductive Learning & Bias"
+        },
+        {
+          "question_text": "Construct the confusion matrix, calculate False Positive and False Negative metrics for the 200 email classification dataset.",
+          "marks": 5,
+          "bloom_level": "L3",
+          "aicte_verb": "Construct",
+          "co": "CO2",
+          "topic": "Classification Confusion Matrix"
+        },
+        {
+          "question_text": "Differentiate between Post Pruning and Pre-pruning methods of Decision Tree. Formulate how overfitting is detected.",
+          "marks": 10,
+          "bloom_level": "L4",
+          "aicte_verb": "Differentiate",
+          "co": "CO3",
+          "topic": "Decision Trees & Pruning"
+        },
+        {
+          "question_text": "Derive the optimization function for linear Support Vector Machine (SVM) and formulate the discriminant function.",
+          "marks": 10,
+          "bloom_level": "L5",
+          "aicte_verb": "Derive",
+          "co": "CO4",
+          "topic": "Support Vector Machines"
+        }
+      ]
+    },
+    {
+      "set_id": "set_4",
+      "set_name": "Set 4 - Clustering & Ensemble Methods",
+      "questions": [
+        {
+          "question_text": "Apply K-means algorithm on given 2D coordinates A(2,2), B(3,2), C(1,1), D(3,1), E(1.5,0.5) to partition into two clusters for two iterations.",
+          "marks": 10,
+          "bloom_level": "L3",
+          "aicte_verb": "Apply",
+          "co": "CO4",
+          "topic": "K-Means Coordinate Clustering"
+        },
+        {
+          "question_text": "Describe the architecture and voting mechanism of bagging in ensemble methods. Analyze the reduction in model variance.",
+          "marks": 10,
+          "bloom_level": "L4",
+          "aicte_verb": "Describe",
+          "co": "CO4",
+          "topic": "Ensemble Bagging & Random Forests"
+        },
+        {
+          "question_text": "Differentiate between Single Link, Complete Link, and Average Link agglomerative hierarchical clustering.",
+          "marks": 5,
+          "bloom_level": "L4",
+          "aicte_verb": "Differentiate",
+          "co": "CO4",
+          "topic": "Hierarchical Clustering"
+        },
+        {
+          "question_text": "Evaluate the clinical dataset with attributes [Cholesterol, Diabetic, Family History, Blood Pressure] and predict the risk label for test query point.",
+          "marks": 15,
+          "bloom_level": "L5",
+          "aicte_verb": "Evaluate",
+          "co": "CO5",
+          "topic": "Supervised Model Inference"
+        }
+      ]
+    }
+  ]
+}

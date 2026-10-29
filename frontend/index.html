@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloomCraft AI - Cognitive Examination Engineering System</title>
+  <meta name="description"
+    content="University-grade automated examination paper generator adhering to Revised Bloom's Taxonomy, syllabus ingestion, cognitive blueprinting, and outcome-based education standards.">
+
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/print.css">
+</head>
+
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- =======================================================================
+       OPTIONAL AUTHENTICATION MODAL/GATE VIEW
+       ======================================================================= -->
+  <div id="auth-gate-view" class="auth-gate-view" style="display: flex;">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-emblem-large">
+          <svg class="icon-svg icon-lg" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+        </div>
+        <h2 class="auth-portal-title">BloomCraft Academic Studio</h2>
+        <p class="auth-portal-subtitle">Outcome-Based Examination Engineering & Cognitive Calibration System</p>
+        <div class="auth-security-notice">
+          <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>Faculty Authentication & Profile</span>
+        </div>
+      </div>
+
+      <!-- Auth Tabs: Sign In / Sign Up -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tab-btn-login" type="button">
+          <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          <span>Faculty Sign In</span>
+        </button>
+        <button class="auth-tab-btn" id="tab-btn-signup" type="button">
+          <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <line x1="20" y1="8" x2="20" y2="14"/>
+            <line x1="23" y1="11" x2="17" y2="11"/>
+          </svg>
+          <span>Register Faculty Account</span>
+        </button>
+      </div>
+
+      <div class="auth-card-body">
+        <!-- FORM 1: LOGIN -->
+        <form id="form-faculty-login" class="auth-form active">
+          <div class="form-group">
+            <label class="form-label" for="login-username">Faculty Username / ID</label>
+            <input type="text" id="login-username" class="form-input" placeholder="Enter your username (e.g. prof.turing)" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" for="login-password" style="margin-bottom: 0;">Password</label>
+              <button type="button" id="btn-forgot-password-link" style="background: none; border: none; padding: 0; color: var(--primary-color, #1D4ED8); font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: underline;">
+                Forgot Password?
+              </button>
+            </div>
+            <div class="input-with-action">
+              <input type="password" id="login-password" class="form-input" placeholder="Enter your faculty password" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-pwd" id="btn-toggle-login-pwd" title="Toggle password visibility">
+                <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div id="login-error-msg" class="auth-alert error" style="display: none;"></div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-login">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            <span>Sign In to Examination Workspace</span>
+          </button>
+        </form>
+
+        <!-- FORM 3: FORGOT PASSWORD -->
+        <form id="form-faculty-forgot" class="auth-form" style="display: none;">
+          <div style="margin-bottom: 14px; color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
+            Reset your faculty password by entering your Username or ID and setting a new password.
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="forgot-username">Faculty Username / ID</label>
+            <input type="text" id="forgot-username" class="form-input" placeholder="e.g. Pranav or prof.turing" required autocomplete="username">
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="forgot-new-pwd">New Password</label>
+              <input type="password" id="forgot-new-pwd" class="form-input" placeholder="Enter new password" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="forgot-confirm-pwd">Confirm New Password</label>
+              <input type="password" id="forgot-confirm-pwd" class="form-input" placeholder="Repeat new password" required autocomplete="new-password">
+            </div>
+          </div>
+
+          <div id="forgot-error-msg" class="auth-alert error" style="display: none;"></div>
+          <div id="forgot-success-msg" class="auth-alert success" style="display: none; background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;"></div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-forgot">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/>
+            </svg>
+            <span>Reset Password & Update Credentials</span>
+          </button>
+
+          <div style="text-align: center; margin-top: 14px;">
+            <button type="button" id="btn-back-to-login" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px;">
+              <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Back to Sign In</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- FORM 2: SIGN UP -->
+        <form id="form-faculty-signup" class="auth-form" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="signup-fullname">Full Name & Academic Title</label>
+            <input type="text" id="signup-fullname" class="form-input" placeholder="e.g. Prof. Alan Turing" required>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="signup-username">Username</label>
+              <input type="text" id="signup-username" class="form-input" placeholder="e.g. prof.turing" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-dept">Academic Department</label>
+              <input type="text" id="signup-dept" class="form-input" placeholder="e.g. Computer Science & Eng" required>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="signup-password">Password</label>
+              <input type="password" id="signup-password" class="form-input" placeholder="Create password" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-confirm-pwd">Confirm Password</label>
+              <input type="password" id="signup-confirm-pwd" class="form-input" placeholder="Repeat password" required autocomplete="new-password">
+            </div>
+          </div>
+
+          <div id="signup-error-msg" class="auth-alert error" style="display: none;"></div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-signup">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            <span>Register Faculty Account & Enter</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="auth-card-footer">
+        <span style="font-size: 11.5px; color: var(--text-muted);">
+          Protected Institutional System &bull; Each faculty member has a private, isolated examination archive.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MAIN DASHBOARD VIEW (ACTIVE WORKSPACE)
+       ======================================================================= -->
+  <div id="dashboard-view" class="dashboard-view" style="display: none;">
+    <div class="app-container">
+
+      <!-- Navigation Bar -->
+      <header class="navbar no-print">
+      <div class="brand-wrapper">
+        <div class="brand-emblem" aria-hidden="true">
+          <svg class="icon-svg icon-md" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1 class="brand-title">
+            BloomCraft
+            <span class="brand-tag">Academic Studio</span>
+          </h1>
+          <span class="brand-subtitle">Outcome-Based Examination Engineering & Revised Bloom's Taxonomy
+            Calibration</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <!-- Download Source ZIP -->
+        <a href="/api/download-zip" class="btn btn-ghost btn-sm" title="Download Complete Project ZIP" download>
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span class="desktop-only">Source Code</span>
+        </a>
+
+        <!-- Past Papers History Button -->
+        <button class="btn btn-secondary btn-sm" id="btn-open-history" title="View Previously Generated Question Papers">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span>Past Papers</span>
+          <span class="history-count-badge" id="nav-history-badge" style="display: none;">0</span>
+        </button>
+
+        <!-- Faculty Profile / Auth State Component -->
+        <div id="nav-user-container" class="nav-user-container">
+          <!-- Populated dynamically via AuthModule -->
+        </div>
+
+        <button class="btn btn-secondary btn-sm" id="btn-open-settings" title="System Configuration">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span class="desktop-only">Settings</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Workflow Progress Step Bar -->
+    <nav class="workflow-steps no-print" aria-label="Workflow Navigation">
+      <div class="step-tab active" data-tab="syllabus" id="nav-step-1">
+        <div class="step-number">1</div>
+        <div class="step-text">
+          <span class="step-label">Stage 1</span>
+          <span class="step-title">Syllabus Ingestion & Document</span>
+        </div>
+      </div>
+
+      <div class="step-tab" data-tab="blueprint" id="nav-step-2">
+        <div class="step-number">2</div>
+        <div class="step-text">
+          <span class="step-label">Stage 2</span>
+          <span class="step-title">Marking Scheme & Blueprint</span>
+        </div>
+      </div>
+
+      <div class="step-tab" data-tab="studio" id="nav-step-3">
+        <div class="step-number">3</div>
+        <div class="step-text">
+          <span class="step-label">Stage 3</span>
+          <span class="step-title">Paper Studio & Custom Layout</span>
+        </div>
+      </div>
+
+      <div class="step-tab" data-tab="analytics" id="nav-step-4">
+        <div class="step-number">4</div>
+        <div class="step-text">
+          <span class="step-label">Stage 4</span>
+          <span class="step-title">Analytics & Evaluation Rubrics</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- =====================================================================
+         TAB 1: SYLLABUS INGESTION & EXTRACTED DOCUMENT VIEWER
+         ===================================================================== -->
+    <main id="tab-syllabus" class="tab-view">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">
+              <svg class="icon-svg icon-md" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              Curriculum & Syllabus Ingestion
+            </h2>
+            <p class="panel-subtitle">Upload university curriculum PDF documents or choose a preloaded engineering
+              course curriculum.</p>
+          </div>
+        </div>
+
+        <!-- Faculty Session & History Banner -->
+        <div id="syllabus-user-banner" class="syllabus-user-banner" style="display: none;"></div>
+
+        <!-- Sample Curricula Row -->
+        <div style="margin-bottom: 20px;">
+          <label class="form-label">Pre-configured University Engineering Curricula</label>
+          <div id="sample-chips-container" class="chips-row">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Left: Upload & Course Metadata -->
+          <div>
+            <!-- Drag & Drop Zone -->
+            <div class="form-group">
+              <label class="form-label">Upload Curriculum Document (PDF / TXT)</label>
+              <div class="dropzone" id="syllabus-dropzone">
+                <div class="dropzone-icon">
+                  <svg class="icon-svg" style="width:36px; height:36px;" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                </div>
+                <div class="dropzone-text">Click or Drag & Drop Syllabus PDF</div>
+                <div class="dropzone-subtext">Automatic unit extraction, topic segmentation, and full text retrieval
+                </div>
+                <input type="file" id="syllabus-file-input" accept=".pdf,.txt,.md" style="display: none;">
+              </div>
+            </div>
+
+            <!-- Course Metadata Fields -->
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="course-code">Course Code</label>
+                <input type="text" id="course-code" class="form-input" value="CS501" placeholder="e.g. CS501">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="course-dept">Department / Faculty</label>
+                <input type="text" id="course-dept" class="form-input" value="Computer Science & Engineering"
+                  placeholder="e.g. CSE">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="course-name">Course Title</label>
+              <input type="text" id="course-name" class="form-input" value="Database Management Systems"
+                placeholder="e.g. Database Management Systems">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="syllabus-text-input">Or Paste Curriculum Text Manually</label>
+              <textarea id="syllabus-text-input" class="form-textarea"
+                placeholder="Paste syllabus text here... e.g.&#10;UNIT 1: ER Model and Relational Schemas...&#10;UNIT 2: SQL and Normalization..."></textarea>
+            </div>
+
+            <button class="btn btn-secondary" id="btn-parse-text" style="width: 100%;">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span>Parse & Ingest Curriculum Structure</span>
+            </button>
+          </div>
+
+          <!-- Right: Parsed Summary & Dual View (Structured Modules vs Extracted Text) -->
+          <div>
+            <div id="syllabus-empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+              <svg class="icon-svg" style="width:44px; height:44px; margin-bottom: 12px; color: var(--border-medium);"
+                viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <p style="font-weight: 600; color: var(--text-secondary);">No syllabus parsed yet.</p>
+              <p style="font-size: 13px;">Upload a syllabus PDF or select a standard course curriculum above.</p>
+            </div>
+
+            <div id="parsed-syllabus-container" style="display: none;">
+              <!-- View Switcher Tabs: Modules vs Extracted Document -->
+              <div class="view-tabs-header">
+                <button class="view-tab-btn active" id="btn-view-modules">
+                  <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  <span>Structured Modules</span>
+                </button>
+                <button class="view-tab-btn" id="btn-view-extracted-doc">
+                  <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  <span>Extracted Syllabus Document</span>
+                </button>
+              </div>
+
+              <!-- VIEW 1: STRUCTURED MODULES -->
+              <div id="view-section-modules">
+                <!-- Metrics -->
+                <div class="grid-3" style="margin-bottom: 16px;">
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <svg class="icon-svg" viewBox="0 0 24 24">
+                        <path
+                          d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="metric-value" id="stat-total-units">5</div>
+                      <div class="metric-label">Units / Modules</div>
+                    </div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <svg class="icon-svg" viewBox="0 0 24 24">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="metric-value" id="stat-total-topics">28</div>
+                      <div class="metric-label">Key Topics</div>
+                    </div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-icon">
+                      <svg class="icon-svg" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="metric-value" id="stat-total-cos">5</div>
+                      <div class="metric-label">Course Outcomes</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Units List -->
+                <div id="units-list" style="max-height: 400px; overflow-y: auto;"></div>
+              </div>
+
+              <!-- VIEW 2: EXTRACTED SYLLABUS DOCUMENT (RAW EXTRACTED TEXT FROM PDF) -->
+              <div id="view-section-extracted-doc" style="display: none;">
+                <div class="extracted-doc-container">
+                  <div class="extracted-doc-toolbar">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <span id="doc-stat-lines">0 lines</span>
+                      <span>•</span>
+                      <span id="doc-stat-chars">0 characters</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btn-copy-extracted-text">
+                      <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                      <span>Copy Text</span>
+                    </button>
+                  </div>
+                  <pre class="extracted-doc-content"
+                    id="extracted-syllabus-text-display">Loading extracted text...</pre>
+                </div>
+              </div>
+
+              <!-- Proceed Button -->
+              <div style="margin-top: 18px; text-align: right;">
+                <button class="btn btn-primary btn-lg" id="btn-proceed-blueprint">
+                  <span>Configure Marking Scheme & Blueprint →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- =====================================================================
+         TAB 2: BLUEPRINT DESIGNER, MARKING SCHEME & COGNITIVE MATRIX
+         ===================================================================== -->
+    <section id="tab-blueprint" class="tab-view" style="display: none;">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">
+              <svg class="icon-svg icon-md" viewBox="0 0 24 24">
+                <line x1="4" y1="21" x2="4" y2="14" />
+                <line x1="4" y1="10" x2="4" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12" y2="3" />
+                <line x1="20" y1="21" x2="20" y2="16" />
+                <line x1="20" y1="12" x2="20" y2="3" />
+                <line x1="1" y1="14" x2="7" y2="14" />
+                <line x1="9" y1="8" x2="15" y2="8" />
+                <line x1="17" y1="16" x2="23" y2="16" />
+              </svg>
+              Exam Marking Scheme & Cognitive Blueprint
+            </h2>
+            <p class="panel-subtitle">Define section architecture, question counts, marks weightage, and Bloom's
+              Taxonomy cognitive distribution.</p>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-lg" id="btn-generate-paper">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span>Generate Examination Paper</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Template & Exam Metadata Grid -->
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="select-exam-template">Exam Template Preset</label>
+            <select id="select-exam-template" class="form-select">
+              <optgroup label="Affiliated & Autonomous College Formats">
+                <option value="rcpit_sem_65" selected>R. C. Patel Institute (RCPIT) - 65 Marks (2:00 Hrs)</option>
+                <option value="rcpit_sem_60">R. C. Patel Institute (RCPIT) - 60 Marks (2:00 Hrs)</option>
+                <option value="djsce_sem_60">SVKM D. J. Sanghvi (DJSCE) - 60 Marks (2:00 Hrs)</option>
+                <option value="insem_25">In-Semester Assessment - 25 Marks (1:00 Hr)</option>
+                <option value="unit_test_20">Unit Test Assessment - 20 Marks (1:00 Hr)</option>
+              </optgroup>
+              <optgroup label="Standard University Presets">
+                <option value="end_sem_100">Semester End (100 Marks - 3:00 Hrs)</option>
+                <option value="mid_sem_50">Mid-Semester / Internal (50 Marks - 2:00 Hrs)</option>
+                <option value="cat_70">Continuous Assessment (70 Marks - 3:00 Hrs)</option>
+                <option value="quiz_30">Class Quiz / Unit Assessment (30 Marks - 1:00 Hr)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="blueprint-total-marks">Total Marks</label>
+            <input type="number" id="blueprint-total-marks" class="form-input" value="65">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="blueprint-duration">Duration</label>
+            <input type="text" id="blueprint-duration" class="form-input" value="02:00 Hrs.">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="blueprint-exam-title">Examination Title</label>
+            <input type="text" id="blueprint-exam-title" class="form-input" value="END SEMESTER EXAMINATION">
+          </div>
+        </div>
+
+        <!-- Question Synthesis Engine & Custom Question Sets Bar -->
+        <div class="scheme-box" style="margin-bottom: 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 12px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <div>
+                <label class="form-label" for="select-generation-source" style="margin-bottom: 4px; font-weight: 700;">Question Synthesis Source</label>
+                <select id="select-generation-source" class="form-select" style="min-width: 280px; height: 36px; padding: 4px 10px; font-size: 13px;">
+                  <option value="engine">AICTE Revised Policy Algorithmic Engine (Criterion 3 NBA)</option>
+                  <option value="user_sets">Faculty Question Bank / Custom Sets (Sample from Sets)</option>
+                  <option value="hybrid">Hybrid Synthesis (Custom Sets first, fill quota via AICTE)</option>
+                </select>
+              </div>
+              <div style="margin-top: 18px;">
+                <button class="btn btn-secondary btn-sm" id="btn-open-question-sets" type="button" title="Add or manage your own question sets">
+                  <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span>Manage Question Sets (Add Your Questions)</span>
+                  <span class="badge" id="bank-total-badge" style="background: rgba(59, 130, 246, 0.2); color: #60A5FA; margin-left: 6px;">4 Sets (16 Qs)</span>
+                </button>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); max-width: 420px; line-height: 1.4;" id="generation-source-note">
+              Active: Standard AICTE Examination Reform Policy algorithmic & cognitive engine.
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Left: Bloom's Taxonomy Cognitive Distribution Sliders -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h3 style="font-size: 14.5px; font-weight: 700;">Cognitive Target Calibration</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12.5px; font-weight: 600; color: var(--text-secondary);">Total:</span>
+                <span id="bloom-total-pct"
+                  style="font-family: var(--font-mono); font-weight: 700; font-size: 14px;">100%</span>
+                <button class="btn btn-secondary btn-sm" id="btn-auto-balance"
+                  title="Normalize distribution to exactly 100%">Auto-Balance</button>
+              </div>
+            </div>
+
+            <!-- Preset Buttons -->
+            <div class="chips-row" style="margin-bottom: 14px;">
+              <button class="chip" data-cognitive-preset="balanced">Balanced Academic</button>
+              <button class="chip" data-cognitive-preset="analytical">Analytical Focus</button>
+              <button class="chip" data-cognitive-preset="foundational">Foundational</button>
+              <button class="chip" data-cognitive-preset="advanced">Advanced Synthesis</button>
+            </div>
+
+            <!-- Mini Visualizer Stacked Bar -->
+            <div id="bloom-stacked-bar"
+              style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; margin-bottom: 14px; background: rgba(255,255,255,0.05);">
+            </div>
+
+            <!-- Sliders Container -->
+            <div id="bloom-sliders-container">
+              <!-- Populated via blueprint.js -->
+            </div>
+          </div>
+
+          <!-- Right: Marking Scheme Section Architecture & Manual Adjuster -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h3 style="font-size: 14.5px; font-weight: 700;">Section Architecture & Marking Scheme</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="computed-blueprint-marks" class="marks-badge">100 Marks</span>
+                <button class="btn btn-secondary btn-sm" id="btn-add-section">
+                  <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span>Add Section</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Marking Scheme Format Upload & Template Bar -->
+            <div class="scheme-box" style="margin-bottom: 14px;">
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <strong style="font-size: 12.5px; color: var(--text-primary);">Marking Scheme Format</strong>
+                  <div style="font-size: 11.5px; color: var(--text-muted);">Upload custom marking scheme JSON or
+                    configure sections manually</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-outline btn-sm" id="btn-download-scheme-template"
+                    title="Download template JSON to edit and re-upload">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span>Format Template</span>
+                  </button>
+                  <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin: 0;">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span>Upload Format</span>
+                    <input type="file" id="marking-scheme-file-input" accept=".json,.txt" style="display: none;">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Section Configuration Cards -->
+            <div id="blueprint-sections-container" style="max-height: 480px; overflow-y: auto;">
+              <!-- Populated and dynamically editable via blueprint.js -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         TAB 3: QUESTION PAPER STUDIO (WEB PREVIEW & CUSTOM LAYOUT)
+         ===================================================================== -->
+    <section id="tab-studio" class="tab-view" style="display: none;">
+      <!-- Action & Toolbar -->
+      <div class="glass-panel paper-actions-bar no-print" style="padding: 12px 18px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="marks-badge" id="studio-stat-marks">100 Total Marks</span>
+            <span class="co-badge" id="studio-stat-questions">17 Questions</span>
+            <button class="btn btn-secondary btn-sm" id="btn-open-layout-customizer">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="9" y1="21" x2="9" y2="9" />
+              </svg>
+              <span>Customize Layout</span>
+            </button>
+            <button class="btn btn-outline btn-sm" id="btn-toggle-columns"
+              title="Toggle between 1-Column and 2-Column layout">
+              <span id="col-toggle-label">2-Column Layout</span>
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" id="btn-studio-history" title="Browse Previously Generated Question Papers">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Past Papers</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-regenerate-all">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              <span>Regenerate All</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-export-json">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span>Export JSON</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-export-word">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <span>Download Word (.doc)</span>
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-print-paper">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              <span>Print / Save PDF</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formal University Examination Sheet (Renders for Web & Print) -->
+      <div class="exam-sheet" id="exam-sheet-container">
+        <!-- University & Exam Header -->
+        <div class="exam-header">
+          <div class="exam-inst-name" id="exam-render-inst">DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING</div>
+          <div class="exam-dept-name" id="exam-render-dept" style="display: none;"></div>
+          <div class="exam-title-name" id="exam-render-title">SEMESTER END EXAMINATION</div>
+          <div class="exam-session-name" id="exam-render-session" style="display: none;"></div>
+        </div>
+
+        <!-- Meta Table / Grid -->
+        <div class="exam-meta-grid">
+          <div><strong>Course:</strong> <span id="exam-render-course">CS501: Database Management Systems</span></div>
+          <div style="text-align: right;" id="exam-render-roll-container">
+            <strong id="exam-render-roll-label">Roll No / USN:</strong>
+            <span id="exam-render-roll-box" class="roll-box-cells">
+              <span class="roll-cell"></span><span class="roll-cell"></span><span class="roll-cell"></span><span
+                class="roll-cell"></span><span class="roll-cell"></span><span class="roll-cell"></span><span
+                class="roll-cell"></span><span class="roll-cell"></span><span class="roll-cell"></span><span
+                class="roll-cell"></span>
+            </span>
+          </div>
+          <div><strong>Duration:</strong> <span id="exam-render-duration">3 Hours</span></div>
+          <div style="text-align: right;"><strong>Max. Marks:</strong> <span id="exam-render-marks">100 Marks</span>
+          </div>
+        </div>
+
+        <!-- Instructions Box -->
+        <div class="exam-instructions-box" id="exam-render-instructions">
+          <strong>Instructions:</strong> Answer all questions from Part A and any four questions from Part B. Make
+          suitable assumptions wherever necessary.
+        </div>
+
+        <!-- AICTE Model Format: Covered Course Outcomes Box -->
+        <div id="exam-co-covered-box" class="exam-co-covered-box" style="display:none;"></div>
+
+        <!-- Dynamic Question Sections Target -->
+        <div id="paper-render-target">
+          <!-- Populated via generator.js -->
+        </div>
+
+        <!-- Dedicated Section: Question-to-CO Fulfillment & Mapping Matrix -->
+        <div id="exam-co-matrix-target" class="exam-co-matrix-wrapper" style="display:none;"></div>
+
+        <div style="text-align: center; margin-top: 36px; font-weight: bold; font-size: 12.5px; color: #475569;">
+          *** END OF QUESTION PAPER ***
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         TAB 4: ANALYTICS, ACCREDITATION & EVALUATION RUBRICS
+         ===================================================================== -->
+    <section id="tab-analytics" class="tab-view" style="display: none;">
+      <div id="analytics-empty-state" class="glass-panel"
+        style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+        <svg class="icon-svg" style="width:44px; height:44px; margin-bottom: 12px; color: var(--border-medium);"
+          viewBox="0 0 24 24">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        <p style="font-weight: 600; color: var(--text-secondary);">No examination paper generated yet.</p>
+        <p style="font-size: 13px;">Generate an examination paper in Stage 2 to inspect accreditation compliance,
+          cognitive depth, and marking rubrics.</p>
+      </div>
+
+      <div id="analytics-content" style="display: none;">
+        <!-- Top Metric Highlights -->
+        <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="metric-card">
+            <div class="metric-icon">
+              <svg class="icon-svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            </div>
+            <div>
+              <div class="metric-value" id="metric-cog-index">3.4 / 6.0</div>
+              <div class="metric-label">Cognitive Depth Index</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">
+              <svg class="icon-svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+            </div>
+            <div>
+              <div class="metric-value" id="metric-paper-marks">100 Marks</div>
+              <div class="metric-label">Accreditation Total Marks</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">
+              <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+            </div>
+            <div>
+              <div class="metric-value" id="metric-questions-count">17 Questions</div>
+              <div class="metric-label">Total Questions Evaluated</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target vs Actual Distribution Table -->
+        <div class="glass-panel" style="margin-bottom: 20px;">
+          <div class="panel-header">
+            <div>
+              <h3 class="panel-title">Target vs. Actual Bloom's Level Distribution</h3>
+              <p class="panel-subtitle">Accreditation compliance verification against NBA / NAAC / AICTE cognitive
+                distribution benchmarks.</p>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary);">
+                  <th style="padding: 10px 8px;">Bloom's Taxonomy Level</th>
+                  <th style="padding: 10px 8px;">Target %</th>
+                  <th style="padding: 10px 8px;">Actual Marks %</th>
+                  <th style="padding: 10px 8px;">Question Count</th>
+                  <th style="padding: 10px 8px;">Marks Allocated</th>
+                  <th style="padding: 10px 8px;">Deviation</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-table-body">
+                <!-- Populated via generator.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Course Outcomes Attainment & Fulfillment Breakdown (Criterion 3 NBA) -->
+        <div class="glass-panel" style="margin-bottom: 20px;">
+          <div class="panel-header">
+            <div>
+              <h3 class="panel-title">Course Outcomes (CO) Attainment & Mapping Breakdown</h3>
+              <p class="panel-subtitle">Accreditation compliance verification showing marks weightage, percentage attainment, and specific fulfilling questions for each Course Outcome.</p>
+            </div>
+          </div>
+
+          <div id="analytics-co-breakdown-container" class="grid-3" style="gap: 14px;">
+            <!-- Populated via generator.js -->
+          </div>
+        </div>
+
+        <!-- Step-wise Marking Scheme & Solution Rubrics -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div>
+              <h3 class="panel-title">Scheme of Evaluation & Marking Rubric</h3>
+              <p class="panel-subtitle">Question-by-question scoring criteria and step-wise grading benchmarks for
+                evaluators.</p>
+            </div>
+          </div>
+
+          <div id="rubrics-container">
+            <!-- Populated via generator.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    </div> <!-- /.app-container -->
+  </div> <!-- /#dashboard-view -->
+
+  <!-- =======================================================================
+       MODAL 1: CUSTOM QUESTION PAPER LAYOUT STUDIO
+       ======================================================================= -->
+  <div class="modal-overlay" id="modal-custom-layout">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="9" y1="21" x2="9" y2="9" />
+          </svg>
+          Custom Question Paper Layout Studio
+        </h3>
+        <button class="btn-icon" data-close-modal>
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-2">
+          <!-- Left Column: Header Information -->
+          <div>
+            <h4 style="font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Header &
+              Institutional Details</h4>
+
+            <div class="form-group">
+              <label class="form-label" for="layout-inst-name">Institution / University Name</label>
+              <input type="text" id="layout-inst-name" class="form-input"
+                placeholder="e.g. NATIONAL INSTITUTE OF TECHNOLOGY">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="layout-dept-name">Department / Faculty</label>
+              <input type="text" id="layout-dept-name" class="form-input"
+                placeholder="e.g. DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING">
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="layout-exam-title">Examination Title</label>
+                <input type="text" id="layout-exam-title" class="form-input"
+                  placeholder="e.g. B.Tech End-Semester Examination">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="layout-academic-session">Academic Session / Year</label>
+                <input type="text" id="layout-academic-session" class="form-input"
+                  placeholder="e.g. Academic Year 2026-2027">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="layout-degree-branch">Degree / Branch</label>
+                <input type="text" id="layout-degree-branch" class="form-input"
+                  placeholder="e.g. B.Tech (CSE) Semester V">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="layout-regulation">Regulation Code</label>
+                <input type="text" id="layout-regulation" class="form-input" placeholder="e.g. R20 / CBCS">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="layout-roll-label">Roll Number Box Label</label>
+              <input type="text" id="layout-roll-label" class="form-input" value="Roll No / USN:">
+            </div>
+          </div>
+
+          <!-- Right Column: Presentation, Columns & Tag Visibility -->
+          <div>
+            <h4 style="font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">
+              Presentation & Typography</h4>
+
+            <div class="form-group">
+              <label class="form-label">Page Column Layout</label>
+              <div class="layout-toggle-group">
+                <button type="button" class="layout-opt-btn active" id="btn-layout-1col" data-col="1">Single Column
+                  (Standard)</button>
+                <button type="button" class="layout-opt-btn" id="btn-layout-2col" data-col="2">Two Columns
+                  (Compact)</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Exam Paper Typography</label>
+              <div class="layout-toggle-group">
+                <button type="button" class="layout-opt-btn active" id="btn-font-serif" data-font="serif">Academic Serif
+                  (Times New Roman)</button>
+                <button type="button" class="layout-opt-btn" id="btn-font-sans" data-font="sans">Clean Institutional
+                  Sans (Arial)</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Roll Number Field Style</label>
+              <div class="layout-toggle-group">
+                <button type="button" class="layout-opt-btn active" id="btn-roll-boxes" data-roll="boxes">Individual
+                  Digit Cells</button>
+                <button type="button" class="layout-opt-btn" id="btn-roll-line" data-roll="line">Underline Line</button>
+              </div>
+            </div>
+
+            <h4 style="font-size: 13.5px; font-weight: 700; margin: 16px 0 10px; color: var(--text-primary);">Question
+              Tag Visibility</h4>
+
+            <div class="toggle-switch-row">
+              <span class="toggle-switch-label">Display Bloom's Taxonomy Level Tag on Paper</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-show-bloom" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-switch-row">
+              <span class="toggle-switch-label">Display Course Outcome (CO) Tag on Paper</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-show-co" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-switch-row">
+              <span class="toggle-switch-label">Display Marks Allocation Tag on Paper</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-show-marks" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Instructions Editor -->
+        <div style="margin-top: 18px;">
+          <label class="form-label" for="layout-custom-instructions">Custom Examination Instructions (One instruction
+            per line)</label>
+          <textarea id="layout-custom-instructions" class="form-textarea" rows="3"
+            placeholder="Answer all questions from Part A and any four questions from Part B.&#10;Make suitable assumptions wherever necessary and state them clearly.&#10;Use of non-programmable scientific calculators is permitted."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-close-modal>Cancel</button>
+        <button class="btn btn-primary" id="btn-save-custom-layout">Apply Layout to Paper</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL 2: EDIT QUESTION DETAILS
+       ======================================================================= -->
+  <div class="modal-overlay" id="modal-edit-question">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="edit-modal-slot-title">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Question & Technical Diagram
+        </h3>
+        <button class="btn-icon" data-close-modal>
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+        <div class="form-group">
+          <label class="form-label" for="edit-question-text">Question Text</label>
+          <textarea id="edit-question-text" class="form-textarea" rows="3"></textarea>
+        </div>
+
+        <div class="grid-3" style="margin-bottom: 14px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-question-bloom">Bloom's Level</label>
+            <select id="edit-question-bloom" class="form-select">
+              <option value="L1">L1 - Remembering</option>
+              <option value="L2">L2 - Understanding</option>
+              <option value="L3">L3 - Applying</option>
+              <option value="L4">L4 - Analyzing</option>
+              <option value="L5">L5 - Evaluating</option>
+              <option value="L6">L6 - Creating</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-question-marks">Marks</label>
+            <input type="number" id="edit-question-marks" class="form-input" min="1" max="30">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-question-co">Course Outcome (CO)</label>
+            <input type="text" id="edit-question-co" class="form-input">
+          </div>
+        </div>
+
+        <!-- Academic Diagram / Figure Studio Section -->
+        <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; color: var(--text-primary); cursor: pointer;">
+              <input type="checkbox" id="edit-question-has-figure" style="width: 17px; height: 17px; accent-color: var(--primary-color);">
+              <span>Attach Academic Technical Diagram / Figure</span>
+            </label>
+            <span class="badge" style="background: rgba(37, 99, 235, 0.15); color: #60A5FA; border: 1px solid rgba(37, 99, 235, 0.3); font-size: 11px; font-weight: 600;">
+              Dynamic Vector SVG Engine
+            </span>
+          </div>
+
+          <div id="edit-figure-controls-panel" style="display: none; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;">
+            <div class="grid-2" style="margin-bottom: 12px; gap: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="edit-figure-type">Diagram Archetype</label>
+                <select id="edit-figure-type" class="form-select">
+                  <option value="auto">Auto-Detect Dynamically from Question & Topic</option>
+                  <option value="neural_network">Neural Network / Perceptron / Deep Learning</option>
+                  <option value="reinforcement_learning">Reinforcement Learning (Agent-Environment Loop)</option>
+                  <option value="linear_regression">Linear Regression (OLS Line & Residuals)</option>
+                  <option value="logistic_regression">Logistic Regression (Sigmoid S-Curve)</option>
+                  <option value="svm">Support Vector Machine (Margin & Hyperplane)</option>
+                  <option value="decision_tree">Decision Tree Classification Hierarchy</option>
+                  <option value="graph_structure">Weighted Directed Graph Topology</option>
+                  <option value="clustering_scatter">2D Scatter / Clustering / Voronoi Partition</option>
+                  <option value="coordinate_curve">Coordinate Curve (Bias-Variance, ROC, AUC)</option>
+                  <option value="cpu_scheduling">CPU Scheduling Gantt Chart & Timeline</option>
+                  <option value="memory_paging">Virtual Memory Address Translation & Paging</option>
+                  <option value="database_transaction">Database Transaction Concurrency Schedule</option>
+                  <option value="er_schema">Entity-Relationship (E-R) & Relational Schema</option>
+                  <option value="tree_data_structure">Tree / BST / AVL / Data Structure Hierarchy</option>
+                  <option value="state_machine">State Machine / Automata (DFA/NFA/FSM)</option>
+                  <option value="flow_pipeline">Pipeline / Flowchart / Compiler Phases</option>
+                  <option value="architecture">System Architecture / 3-Tier Enterprise</option>
+                  <option value="sequence_protocol">Protocol Sequence / TCP Timeline / Handshake</option>
+                  <option value="logic_circuit">Digital Logic Gates & Combinational Circuit</option>
+                  <option value="academic_table">ANOVA Experimental Table / ML Dataset Matrix</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="edit-figure-custom-prompt">Custom Diagram Requirement / Instruction</label>
+                <input type="text" id="edit-figure-custom-prompt" class="form-input" placeholder="e.g. Draw Hospital ER model with Doctor, Patient, Ward">
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 14px; align-items: center;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-synthesize-diagram-modal">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span>Synthesize / Generate Diagram</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btn-remove-diagram-modal" style="color: #EF4444;">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span>Remove Diagram</span>
+              </button>
+              <span id="diagram-synth-status" style="font-size: 11.5px; color: #94A3B8;"></span>
+            </div>
+
+            <!-- Live Diagram Preview Box -->
+            <div id="edit-figure-preview-container" style="background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px; padding: 10px; margin-bottom: 12px; text-align: center; min-height: 120px; max-height: 280px; overflow: auto; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <span style="font-size: 12px; color: #64748B;">No diagram synthesized yet. Click 'Synthesize / Generate Diagram' above.</span>
+            </div>
+
+            <div class="grid-2" style="gap: 12px; margin-bottom: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="edit-figure-title">Figure Title</label>
+                <input type="text" id="edit-figure-title" class="form-input" placeholder="e.g. Entity-Relationship Schema">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="edit-figure-caption">Figure Caption</label>
+                <input type="text" id="edit-figure-caption" class="form-input" placeholder="e.g. Figure: Structural model depicting...">
+              </div>
+            </div>
+
+            <!-- Optional Collapsible SVG Code Editor -->
+            <details style="margin-top: 10px; font-size: 11.5px; color: var(--text-secondary);">
+              <summary style="cursor: pointer; font-weight: 600; padding: 4px 0; color: #93C5FD;">Inspect / Edit Raw Vector SVG Code</summary>
+              <textarea id="edit-figure-svg-code" class="form-textarea" rows="4" style="margin-top: 6px; font-family: monospace; font-size: 11px; background: #0F172A; color: #F1F5F9; border-color: #334155;"></textarea>
+            </details>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-close-modal>Cancel</button>
+        <button class="btn btn-primary" id="btn-save-edit-question">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL 3: SYSTEM CONFIGURATION & OPTIONAL AI KEYS
+       ======================================================================= -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          System Configuration
+        </h3>
+        <button class="btn-icon" data-close-modal>
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="setting-inst-name">Default Institution / Department Name</label>
+          <input type="text" id="setting-inst-name" class="form-input"
+            placeholder="e.g. DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING">
+        </div>
+
+        <div
+          style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
+          <div
+            style="font-weight: 600; font-size: 12.5px; color: #93C5FD; display: flex; align-items: center; gap: 6px;">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            Offline Synthesis Guarantee
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+            The built-in pedagogical rule engine functions 100% offline with zero external API dependencies.
+            Add free-tier API keys below to let AI design a different diagram for every question at runtime. Models are discovered automatically and the next provider is used if one fails.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-diagram-mode">Diagrams in generated papers</label>
+          <select id="setting-diagram-mode" class="form-input">
+            <option value="auto">Auto - only questions that need a figure</option>
+            <option value="all">Every question</option>
+            <option value="none">No diagrams</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-groq-key">Groq API Key (primary, free tier)</label>
+          <input type="password" id="setting-groq-key" class="form-input" placeholder="gsk_...">
+          <small style="font-size:11px;color:var(--text-secondary);">Free key: console.groq.com/keys</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-openrouter-key">OpenRouter API Key (fallback 1, free models)</label>
+          <input type="password" id="setting-openrouter-key" class="form-input" placeholder="sk-or-...">
+          <small style="font-size:11px;color:var(--text-secondary);">Free key: openrouter.ai/keys (only models priced at 0 are used)</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-cerebras-key">Cerebras API Key (fallback 2, free tier)</label>
+          <input type="password" id="setting-cerebras-key" class="form-input" placeholder="csk-...">
+          <small style="font-size:11px;color:var(--text-secondary);">Free key: cloud.cerebras.ai</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-mistral-key">Mistral API Key (optional extra fallback)</label>
+          <input type="password" id="setting-mistral-key" class="form-input" placeholder="...">
+        </div>
+
+        <div class="form-group" style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-ghost" id="btn-test-llm" type="button">Test AI connection</button>
+          <span id="llm-test-status" style="font-size:12px;color:var(--text-secondary);"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-close-modal>Close</button>
+        <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- =======================================================================
+       MODAL 5: PAST EXAMINATION PAPERS HISTORY VIEWER
+       ======================================================================= -->
+  <div class="modal-overlay" id="modal-history">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="brand-emblem-sm">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Past Question Papers Archive</h3>
+            <p class="panel-subtitle" id="history-modal-subtitle" style="margin: 0;">
+              Generated papers for faculty member
+            </p>
+          </div>
+        </div>
+        <button class="btn-icon" data-close-modal title="Close">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding-top: 14px;">
+        <!-- Filter & Search Toolbar -->
+        <div class="history-toolbar">
+          <div class="history-search-wrapper">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" id="history-search-input" class="form-input" placeholder="Search by course code, title, or exam name...">
+          </div>
+          <div class="history-actions-bar">
+            <button class="btn btn-outline btn-sm" id="btn-refresh-history">
+              <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              <span>Refresh</span>
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-history-create-new" data-close-modal>
+              <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>New Question Paper</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- History Papers List Container -->
+        <div id="history-papers-list" class="history-papers-container">
+          <!-- Populated dynamically via AuthModule.renderHistoryModal -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <span style="font-size: 12px; color: var(--text-muted);" id="history-footer-summary">
+          0 archived question papers
+        </span>
+        <button class="btn btn-secondary btn-sm" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL 6: CUSTOM QUESTION SETS & QUESTION BANK (ADD YOUR QUESTIONS)
+       ======================================================================= -->
+  <div class="modal-overlay" id="modal-question-sets">
+    <div class="modal-dialog modal-xl" style="max-width: 960px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="brand-emblem-sm">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Faculty Question Sets & Examination Pool (AICTE Criterion 3)</h3>
+            <p class="panel-subtitle" style="margin: 0;">
+              Provide custom question sets (Set 1, 2, 3, 4 with 4+ questions each) to generate exam papers matching your selected marks, duration & templates.
+            </p>
+          </div>
+        </div>
+        <button class="btn-icon" data-close-modal title="Close">
+          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding-top: 14px;">
+        <!-- Toolbar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" id="btn-preload-college-sets" title="Preload actual examination questions from college papers">
+              <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Preload College Examination Sets (16 Qs)</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-add-new-set">
+              <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Add New Question Set</span>
+            </button>
+          </div>
+
+          <button class="btn btn-primary btn-sm" id="btn-save-question-sets">
+            <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            <span>Save & Sync Question Sets</span>
+          </button>
+        </div>
+
+        <!-- Question Set Tabs Bar -->
+        <div style="margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+            Select Question Set:
+          </div>
+          <div id="sets-tab-bar" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+
+        <!-- Active Set Title & Question List -->
+        <div style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 id="active-set-title" style="font-size: 14px; font-weight: 700; margin: 0; color: var(--text-primary);">
+              Active Question Set
+            </h4>
+            <span style="font-size: 11.5px; color: var(--text-muted);">
+              Questions in this set are sampled to generate the exam paper
+            </span>
+          </div>
+
+          <div id="active-set-questions-target" style="max-height: 280px; overflow-y: auto; padding-right: 4px;">
+            <!-- Questions in active set rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Add Question to Active Set Form -->
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px;">
+          <div style="font-weight: 700; font-size: 13px; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Add Question to Current Set</span>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label class="form-label" for="new-q-text">Question Statement (AICTE Action Verb Recommended)</label>
+            <textarea id="new-q-text" class="form-input" rows="2" placeholder="e.g. Explain the Bias-Variance tradeoff in supervised machine learning with mathematical derivations and schematic diagram."></textarea>
+          </div>
+
+          <div class="grid-4" style="gap: 10px; margin-bottom: 10px;">
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" for="new-q-marks">Marks</label>
+              <input type="number" id="new-q-marks" class="form-input" value="5" min="1" max="20">
+            </div>
+
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" for="new-q-bloom">Bloom Level</label>
+              <select id="new-q-bloom" class="form-select">
+                <option value="L1">L1 - Remember</option>
+                <option value="L2">L2 - Understand</option>
+                <option value="L3" selected>L3 - Apply</option>
+                <option value="L4">L4 - Analyze</option>
+                <option value="L5">L5 - Evaluate</option>
+                <option value="L6">L6 - Create</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" for="new-q-co">Target CO</label>
+              <select id="new-q-co" class="form-select">
+                <option value="CO1">CO1</option>
+                <option value="CO2">CO2</option>
+                <option value="CO3">CO3</option>
+                <option value="CO4">CO4</option>
+                <option value="CO5">CO5</option>
+                <option value="CO6">CO6</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" for="new-q-topic">Topic / Module</label>
+              <input type="text" id="new-q-topic" class="form-input" placeholder="e.g. Model Evaluation">
+            </div>
+          </div>
+
+          <div style="text-align: right;">
+            <button class="btn btn-secondary btn-sm" id="btn-add-question-to-set" type="button">
+              <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Add Question Statement</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/app.js?v=4.0"></script>
+  <script src="js/auth.js?v=4.0"></script>
+  <script src="js/syllabus.js?v=4.0"></script>
+  <script src="js/custom_sets.js?v=4.0"></script>
+  <script src="js/blueprint.js?v=4.0"></script>
+  <script src="js/generator.js?v=4.0"></script>
+  <script src="js/export.js?v=4.0"></script>
+</body>
+
+</html>
