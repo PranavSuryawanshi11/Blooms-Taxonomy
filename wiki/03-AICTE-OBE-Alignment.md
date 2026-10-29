@@ -46,3 +46,4 @@ During paper generation, the engine synthesizes an official OBE fulfillment matr
 - [x] **Action Verb Strictness**: Question text strictly starts with or is led by authorized AICTE taxonomy action verbs (*Define, Explain, Calculate, Analyze, Justify, Design*).
 - [x] **Internal Choice Parity**: When internal choices (`OR`) are provided, both alternative questions belong to the **same Course Outcome ($\text{CO}$)** and identical marks weightage.
 - [x] **Balanced Cognitive Rigor**: Elimination of papers dominated exclusively by low-level rote memorization questions ($>60\%$ higher-order thinking skills L3–L6 in autonomous modes).
+

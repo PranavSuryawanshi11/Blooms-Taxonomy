@@ -88,3 +88,4 @@ sequenceDiagram
 1. Click **"Past Papers"** in the top navigation bar.
 2. Review previously synthesized question papers stored securely in your private SQLite archive.
 3. Click on any past paper to re-load it into the studio or download its DOCX export anytime.
+

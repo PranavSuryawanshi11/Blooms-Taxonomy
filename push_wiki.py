@@ -52,6 +52,10 @@ def main():
         print(f"\nCloning GitHub Wiki into temporary staging area...")
         subprocess.run(["git", "clone", WIKI_REPO_URL, temp_dir], check=True)
 
+        # Configure user identity in the cloned repo
+        subprocess.run(["git", "config", "user.name", "PranavSuryawanshi11"], cwd=temp_dir, check=True)
+        subprocess.run(["git", "config", "user.email", "pranavsuryawanshi955@gmail.com"], cwd=temp_dir, check=True)
+
         # Copy all wiki files to clone
         for f in wiki_files:
             src = os.path.join(WIKI_DIR, f)

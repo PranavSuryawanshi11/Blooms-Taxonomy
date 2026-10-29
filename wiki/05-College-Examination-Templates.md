@@ -77,3 +77,4 @@ BloomCraft AI ships with built-in examination blueprints modeled after official 
 | **Part A** | 5 | 2 Marks | **10 Marks** | L1, L2 |
 | **Part B** | 5 | 8 Marks | **40 Marks** | L3, L4, L5 |
 | **Total** | **10 Questions** | | **50 Marks** | |
+

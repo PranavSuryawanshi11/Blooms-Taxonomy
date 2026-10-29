@@ -186,3 +186,4 @@ The BloomCraft AI backend exposes clean REST endpoints on `http://127.0.0.1:5000
 - **Endpoint**: `DELETE /api/history/<paper_id>`
 - **Headers**: `Authorization: Bearer <token>`
 - **Response**: `{"deleted": true}`
+

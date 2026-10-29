@@ -102,3 +102,4 @@ python backend/test_generator.py
 # Test 2: Multi-faculty privacy isolation and SQLite session storage
 python backend/test_auth_history_integration.py
 ```
+

@@ -45,3 +45,4 @@ Where:
 | **Foundational / First Year** | 35% | 35% | 20% | 10% | 0% | 0% | **~2.05** | First-Year Engineering / Core Science |
 | **Autonomous Honours** | 10% | 15% | 25% | 25% | 15% | 10% | **~3.60** | Autonomous Institutes (e.g. RCPIT, DJSCE) |
 | **Research / M.Tech** | 5% | 10% | 20% | 30% | 20% | 15% | **~4.05** | Master of Technology & Specialization Electives |
+
