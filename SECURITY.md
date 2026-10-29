@@ -19,9 +19,9 @@ Only the latest release on the `main` branch receives active security updates an
 - API keys (Groq, OpenRouter, Cerebras, Mistral) are strictly consumed on the server backend during runtime and are never sent or exposed to client-side browsers.
 
 ### 2. Faculty Data Isolation
-- Faculty accounts, hashed credentials, and past examination papers are persisted locally in `backend/data/user_store.json`.
+- Faculty accounts, hashed credentials, and past examination papers are persisted locally in SQLite database `backend/data/bloomcraft.db`.
 - Passwords are encrypted using **PBKDF2-SHA256 with 120,000 hashing rounds** and individual cryptographic salts.
-- The `user_store.json` database is strictly excluded from version control to guarantee institutional confidentiality.
+- The `bloomcraft.db` database is strictly excluded from version control to guarantee institutional confidentiality.
 
 ---
 

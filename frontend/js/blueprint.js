@@ -235,7 +235,12 @@ window.BlueprintModule = {
       const card = document.createElement("div");
       card.className = "scheme-section-item";
 
-      const totalM = sec.question_count * sec.marks_per_question;
+      let totalM = sec.question_count * sec.marks_per_question;
+      if (Array.isArray(sec.question_marks) && sec.question_marks.length === sec.question_count) {
+        totalM = sec.question_marks.reduce((a, b) => a + Number(b), 0);
+      } else if (sec.total_section_marks) {
+        totalM = sec.total_section_marks;
+      }
       sec.total_section_marks = totalM;
 
       card.innerHTML = `
@@ -303,6 +308,7 @@ window.BlueprintModule = {
       const recalcSection = () => {
         const qc = parseInt(qCountInput.value) || 1;
         const mq = parseInt(mqInput.value) || 1;
+        sec.question_marks = null;
         sec.question_count = qc;
         sec.marks_per_question = mq;
         sec.total_section_marks = qc * mq;
@@ -333,7 +339,15 @@ window.BlueprintModule = {
 
   updateTotalMarksIndicator() {
     const sections = window.AppState.currentBlueprintConfig.sections || [];
-    const computedTotal = sections.reduce((acc, s) => acc + (s.question_count * s.marks_per_question), 0);
+    const computedTotal = sections.reduce((acc, s) => {
+      if (Array.isArray(s.question_marks) && s.question_marks.length === s.question_count) {
+        return acc + s.question_marks.reduce((a, b) => a + Number(b), 0);
+      }
+      if (s.total_section_marks) {
+        return acc + Number(s.total_section_marks);
+      }
+      return acc + (s.question_count * s.marks_per_question);
+    }, 0);
     const indicator = document.getElementById("computed-blueprint-marks");
     if (indicator) {
       indicator.innerText = `${computedTotal} Marks`;

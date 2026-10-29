@@ -219,16 +219,6 @@
         </div>
       </div>
       <div class="nav-actions">
-        <!-- Download Source ZIP -->
-        <a href="/api/download-zip" class="btn btn-ghost btn-sm" title="Download Complete Project ZIP" download>
-          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          <span class="desktop-only">Source Code</span>
-        </a>
-
         <!-- Past Papers History Button -->
         <button class="btn btn-secondary btn-sm" id="btn-open-history" title="View Previously Generated Question Papers">
           <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
@@ -243,15 +233,6 @@
         <div id="nav-user-container" class="nav-user-container">
           <!-- Populated dynamically via AuthModule -->
         </div>
-
-        <button class="btn btn-secondary btn-sm" id="btn-open-settings" title="System Configuration">
-          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3" />
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          <span class="desktop-only">Settings</span>
-        </button>
       </div>
     </header>
 
@@ -1218,94 +1199,7 @@
     </div>
   </div>
 
-  <!-- =======================================================================
-       MODAL 3: SYSTEM CONFIGURATION & OPTIONAL AI KEYS
-       ======================================================================= -->
-  <div class="modal-overlay" id="modal-settings">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3" />
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          System Configuration
-        </h3>
-        <button class="btn-icon" data-close-modal>
-          <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label" for="setting-inst-name">Default Institution / Department Name</label>
-          <input type="text" id="setting-inst-name" class="form-input"
-            placeholder="e.g. DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING">
-        </div>
 
-        <div
-          style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
-          <div
-            style="font-weight: 600; font-size: 12.5px; color: #93C5FD; display: flex; align-items: center; gap: 6px;">
-            <svg class="icon-svg icon-sm" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-            Offline Synthesis Guarantee
-          </div>
-          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-            The built-in pedagogical rule engine functions 100% offline with zero external API dependencies.
-            Add free-tier API keys below to let AI design a different diagram for every question at runtime. Models are discovered automatically and the next provider is used if one fails.
-          </p>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="setting-diagram-mode">Diagrams in generated papers</label>
-          <select id="setting-diagram-mode" class="form-input">
-            <option value="auto">Auto - only questions that need a figure</option>
-            <option value="all">Every question</option>
-            <option value="none">No diagrams</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="setting-groq-key">Groq API Key (primary, free tier)</label>
-          <input type="password" id="setting-groq-key" class="form-input" placeholder="gsk_...">
-          <small style="font-size:11px;color:var(--text-secondary);">Free key: console.groq.com/keys</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="setting-openrouter-key">OpenRouter API Key (fallback 1, free models)</label>
-          <input type="password" id="setting-openrouter-key" class="form-input" placeholder="sk-or-...">
-          <small style="font-size:11px;color:var(--text-secondary);">Free key: openrouter.ai/keys (only models priced at 0 are used)</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="setting-cerebras-key">Cerebras API Key (fallback 2, free tier)</label>
-          <input type="password" id="setting-cerebras-key" class="form-input" placeholder="csk-...">
-          <small style="font-size:11px;color:var(--text-secondary);">Free key: cloud.cerebras.ai</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="setting-mistral-key">Mistral API Key (optional extra fallback)</label>
-          <input type="password" id="setting-mistral-key" class="form-input" placeholder="...">
-        </div>
-
-        <div class="form-group" style="display:flex;gap:8px;align-items:center;">
-          <button class="btn btn-ghost" id="btn-test-llm" type="button">Test AI connection</button>
-          <span id="llm-test-status" style="font-size:12px;color:var(--text-secondary);"></span>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" data-close-modal>Close</button>
-        <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
-      </div>
-    </div>
-  </div>
 
 
 

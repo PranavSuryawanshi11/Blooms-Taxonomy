@@ -232,72 +232,7 @@ function initModals() {
     });
   });
 
-  // Settings Modal Save
-  const saveSettingsBtn = document.getElementById("btn-save-settings");
-  if (saveSettingsBtn) {
-    saveSettingsBtn.addEventListener("click", () => {
-      const instName = document.getElementById("setting-inst-name").value.trim();
 
-      const modeSel = document.getElementById("setting-diagram-mode");
-      if (modeSel) {
-        window.AppState.diagramMode = modeSel.value;
-        localStorage.setItem("bloom_diagram_mode", modeSel.value);
-      }
-      ["groq", "openrouter", "cerebras", "mistral"].forEach(name => {
-        const val = document.getElementById(`setting-${name}-key`).value.trim();
-        window.AppState.apiConfig[`${name}_key`] = val;
-        localStorage.setItem(`bloom_${name}_key`, val);
-      });
-      if (instName) {
-        window.AppState.currentBlueprintConfig.institution_name = instName;
-        window.AppState.customLayout.institution_name = instName;
-      }
-
-      document.getElementById("modal-settings").classList.remove("active");
-      showToast("Configuration saved successfully.", "success");
-    });
-  }
-
-  // Test AI connection (shows which free-tier models were discovered)
-  const testLlmBtn = document.getElementById("btn-test-llm");
-  if (testLlmBtn) {
-    testLlmBtn.addEventListener("click", async () => {
-      const status = document.getElementById("llm-test-status");
-      const cfg = {};
-      ["groq", "openrouter", "cerebras", "mistral"].forEach(name => {
-        cfg[`${name}_key`] = document.getElementById(`setting-${name}-key`).value.trim();
-      });
-      status.textContent = "Checking...";
-      try {
-        const res = await fetch(`${API_BASE}/api/llm/status`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ api_config: cfg, refresh: true })
-        });
-        const data = await res.json();
-        if (!data.success) { status.textContent = data.error || "Failed."; return; }
-        if (!data.configured) { status.textContent = "No key entered - offline engine will be used."; return; }
-        status.textContent = data.providers.map(p =>
-          `${p.name}: ${p.discovered ? p.top_models[0] : "no models found (check key)"}`).join("  |  ");
-      } catch (e) {
-        status.textContent = "Cannot reach backend.";
-      }
-    });
-  }
-
-  // Open Settings Button
-  const openSettingsBtn = document.getElementById("btn-open-settings");
-  if (openSettingsBtn) {
-    openSettingsBtn.addEventListener("click", () => {
-      ["groq", "openrouter", "cerebras", "mistral"].forEach(name => {
-        document.getElementById(`setting-${name}-key`).value = window.AppState.apiConfig[`${name}_key`] || "";
-      });
-      const modeSel2 = document.getElementById("setting-diagram-mode");
-      if (modeSel2) modeSel2.value = window.AppState.diagramMode || "auto";
-      document.getElementById("setting-inst-name").value = window.AppState.currentBlueprintConfig.institution_name || "";
-      document.getElementById("modal-settings").classList.add("active");
-    });
-  }
 }
 
 // Custom Layout Modal Controller

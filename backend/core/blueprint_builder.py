@@ -64,13 +64,22 @@ def build_blueprint(
         sec_name = sec_cfg.get("name", f"Section {chr(64 + sec_idx)}")
         instructions = sec_cfg.get("instructions", "Answer all questions.")
         q_count = int(sec_cfg.get("question_count", 5))
-        marks_per_q = int(sec_cfg.get("marks_per_question", 2))
+        default_marks_per_q = int(sec_cfg.get("marks_per_question", 2))
+        q_marks_list = sec_cfg.get("question_marks")
+        q_choices_list = sec_cfg.get("question_choices")
         allowed_levels = sec_cfg.get("allowed_levels", BLOOM_ORDER)
         has_internal_choice = sec_cfg.get("has_internal_choice", False)
 
         section_slots = []
+        sec_marks_sum = 0
 
         for q_idx in range(1, q_count + 1):
+            if q_marks_list and q_idx - 1 < len(q_marks_list):
+                marks_per_q = int(q_marks_list[q_idx - 1])
+            else:
+                marks_per_q = default_marks_per_q
+            sec_marks_sum += marks_per_q
+
             # Select appropriate Bloom level for this question slot
             selected_lvl = _select_optimal_bloom_level(
                 allowed_levels,
@@ -116,7 +125,11 @@ def build_blueprint(
             }
 
             # If section supports internal either/or choice
-            if has_internal_choice and marks_per_q >= 5:
+            should_have_or = has_internal_choice and marks_per_q >= 5
+            if q_choices_list and q_idx - 1 < len(q_choices_list):
+                should_have_or = bool(q_choices_list[q_idx - 1]) and marks_per_q >= 5
+
+            if should_have_or:
                 slot["has_or_option"] = True
                 # Select an alternative topic from the same unit or adjacent unit
                 alt_topic_idx = (topic_idx + 1) % len(topics)
@@ -146,9 +159,9 @@ def build_blueprint(
             "section_id": sec_id,
             "section_name": sec_name,
             "instructions": instructions,
-            "marks_per_question": marks_per_q,
+            "marks_per_question": default_marks_per_q,
             "question_count": q_count,
-            "total_marks": q_count * marks_per_q,
+            "total_marks": sec_marks_sum,
             "slots": section_slots
         })
 

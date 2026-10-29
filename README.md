@@ -348,7 +348,7 @@ python backend/test_e2e_live.py
 ## 🔒 Security & Confidentiality
 
 - **Zero-Credential Commits**: Secret `.env` files are ignored across all folders by `.gitignore`.
-- **Faculty Data Isolation**: Faculty accounts and generated history are stored locally in `backend/data/user_store.json` (strictly ignored from version control).
+- **Faculty Data Isolation**: Faculty accounts and generated history are persisted locally in SQLite database `backend/data/bloomcraft.db` (strictly ignored from version control).
 - **PBKDF2 Password Hashing**: Passwords are saved with cryptographically secure salted hashes (`PBKDF2-SHA256` with 120,000 iterations).
 - **Responsible Disclosure**: See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 

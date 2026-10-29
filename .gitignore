@@ -51,9 +51,12 @@ venv.bak/
 # User Data & Private Faculty Stores (keeps faculty exam papers isolated)
 backend/data/user_store.json
 user_store.json
+*.migrated
 *.sqlite
 *.sqlite3
 *.db
+*.db-wal
+*.db-shm
 
 # Project Packaging & Export Zips
 *.zip

@@ -12,8 +12,8 @@ def create_project_zip():
     zip_path = os.path.join(base_dir, "bloomcraft_ai_project.zip")
 
     exclude_dirs = {"venv", ".venv", "__pycache__", ".git", ".idea", ".vscode", "node_modules"}
-    exclude_exts = {".pyc", ".pyo", ".pyd"}
-    exclude_files = {".env", "user_store.json", "bloomcraft_ai_project.zip"}
+    exclude_exts = {".pyc", ".pyo", ".pyd", ".db", ".db-wal", ".db-shm"}
+    exclude_files = {".env", "user_store.json", "bloomcraft_ai_project.zip", "bloomcraft.db"}
 
     print(f"Packaging BloomCraft Project from: {base_dir}")
     print(f"Destination: {zip_path}")

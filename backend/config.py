@@ -359,6 +359,8 @@ EXAM_TEMPLATES = {
                 "type": "compulsory",
                 "question_count": 4,
                 "marks_per_question": 5,
+                "question_marks": [5, 5, 5, 5],
+                "question_choices": [False, False, False, False],
                 "total_section_marks": 20,
                 "allowed_levels": ["L1", "L2", "L3", "L4"],
                 "has_internal_choice": False
@@ -369,7 +371,9 @@ EXAM_TEMPLATES = {
                 "instructions": "Question 2a is compulsory (5M) and solve any one from Question 2b (10M). (15 Marks)",
                 "type": "choice",
                 "question_count": 2,
-                "marks_per_question": 7,
+                "marks_per_question": 10,
+                "question_marks": [5, 10],
+                "question_choices": [False, True],
                 "total_section_marks": 15,
                 "allowed_levels": ["L2", "L3", "L4"],
                 "has_internal_choice": True
@@ -380,7 +384,9 @@ EXAM_TEMPLATES = {
                 "instructions": "Question 3a is compulsory (5M) and solve any one from Question 3b (10M). (15 Marks)",
                 "type": "choice",
                 "question_count": 2,
-                "marks_per_question": 7,
+                "marks_per_question": 10,
+                "question_marks": [5, 10],
+                "question_choices": [False, True],
                 "total_section_marks": 15,
                 "allowed_levels": ["L3", "L4", "L5"],
                 "has_internal_choice": True
@@ -392,6 +398,8 @@ EXAM_TEMPLATES = {
                 "type": "either_or",
                 "question_count": 1,
                 "marks_per_question": 15,
+                "question_marks": [15],
+                "question_choices": [True],
                 "total_section_marks": 15,
                 "allowed_levels": ["L4", "L5", "L6"],
                 "has_internal_choice": True
