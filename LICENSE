@@ -1,22 +1,62 @@
-MIT License
+BLOOMCRAFT AI - PROPRIETARY NON-COMMERCIAL SOURCE-AVAILABLE LICENSE
 
-Copyright (c) 2026 BloomCraft AI
+Copyright (c) 2026 Pranav Suryawanshi (https://github.com/PranavSuryawanshi11)
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+1. GRANT OF LICENSE (NON-COMMERCIAL USE ONLY)
+================================================================================
+Subject to the terms and restrictions of this License, the Copyright Holder hereby 
+grants to any person obtaining a copy of this software and associated 
+documentation files (the "Software"), a worldwide, royalty-free, non-exclusive 
+license to:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+  (a) Inspect, study, compile, and run the Software for personal and educational use;
+  (b) Modify, adapt, and create derivative works of the Software strictly for 
+      non-commercial academic research, self-study, or non-profit educational purposes;
+  (c) Share and distribute unmodified or modified copies solely under this identical 
+      License, provided that the original copyright notice, this list of conditions, 
+      and the disclaimer below are prominently preserved in all copies.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+================================================================================
+2. STRICT PROHIBITION ON COMMERCIAL SALE & MONETIZATION
+================================================================================
+NO INDIVIDUAL, ENTERPRISE, EDUCATIONAL INSTITUTION, OR OTHER LEGAL ENTITY MAY 
+SELL, RESELL, LEASE, RENT, SUBLICENSE, MONETIZE, COMMERCIALIZE, OR EXPLOIT FOR 
+DIRECT OR INDIRECT FINANCIAL GAIN THIS SOFTWARE OR ANY PORTION, MODIFICATION, OR 
+DERIVATIVE WORK THEREOF WITHOUT THE EXPRESS, PRIOR, WRITTEN CONSENT OF 
+PRANAV SURYAWANSHI.
 
+Specifically, the following commercial activities are strictly FORBIDDEN unless 
+authorized under a separate commercial license executed by the Copyright Holder:
+
+  1. Resale & Distribution: Selling the Software, distributing it as paid standalone 
+     software, or charging any distribution, packaging, or licensing fee.
+  2. Software-as-a-Service (SaaS): Hosting, offering, or providing access to the 
+     Software or its APIs as a commercial cloud service, paid web tool, or subscription.
+  3. Commercial Bundling: Embedding, bundling, or integrating this Software into any 
+     commercial proprietary product, course, training platform, or commercial service.
+  4. Advertising & Monetization: Utilizing the Software as the primary value driver 
+     for paywalled content or ad-monetized commercial applications.
+
+================================================================================
+3. COMMERCIAL LICENSING & PERMISSION REQUESTS
+================================================================================
+If you or your organization wish to obtain commercial licensing, enterprise 
+deployment rights, institutional white-labeling, or express written consent to 
+utilize this software in a commercial setting, please contact the author directly:
+
+  Author: Pranav Suryawanshi
+  GitHub: https://github.com/PranavSuryawanshi11
+  Email:  pranavsuryawanshi955@gmail.com
+
+================================================================================
+4. DISCLAIMER OF WARRANTY & LIMITATION OF LIABILITY
+================================================================================
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NONINFRINGEMENT. IN NO EVENT SHALL 
+THE COPYRIGHT HOLDER OR AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, 
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+THE SOFTWARE.
