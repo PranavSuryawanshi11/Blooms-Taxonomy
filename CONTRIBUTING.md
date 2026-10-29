@@ -7,7 +7,7 @@ Thank you for your interest in contributing to **BloomCraft AI**. We welcome con
 ## 📜 Intellectual Property & Licensing Notice
 
 Before contributing, please note:
-- This project is governed by the **BloomCraft AI Non-Commercial Source-Available License** (see [LICENSE](LICENSE)).
+- This project is governed by a **strict non-commercial, source-available license** (see [LICENSE](LICENSE)).
 - **Commercial sale, distribution, or monetization of this software is prohibited without prior written consent from Pranav Suryawanshi.**
 - By submitting a Pull Request, you agree that your contributions will be licensed under the project's existing license terms.
 
@@ -35,6 +35,8 @@ source venv/bin/activate
 ### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
+# Install development, test & linting tooling:
+pip install -r requirements-dev.txt
 ```
 
 ### 4. Configure Local Environment
@@ -46,6 +48,13 @@ cp .env.example .env
 ### 5. Run Verification Tests
 Before submitting any changes, ensure all test suites pass:
 ```bash
+# Run automated smoke and unit tests:
+pytest tests/ -v
+
+# Check code style with Ruff:
+ruff check .
+
+# Run legacy verification suites:
 python backend/test_auth_history_integration.py
 python backend/test_generator.py
 ```
@@ -55,13 +64,14 @@ python backend/test_generator.py
 ## 📝 Commit Convention
 
 We adhere to the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-- `feat:` A new feature or capability
-- `fix:` A bug fix
-- `docs:` Documentation updates only
-- `style:` Formatting, missing semicolons, whitespace fixes
+- `feat:` A new feature or capability (e.g. `feat(blueprint): add course outcome selector`)
+- `fix:` A bug fix (e.g. `fix(ui): suppress default curriculum toast on unauthenticated page load`)
+- `docs:` Documentation updates only (e.g. `docs(readme): add live demo link and hosting notes`)
+- `ci:` Continuous Integration changes (e.g. `ci: add GitHub Actions workflow for Python 3.11`)
+- `test:` Adding or updating automated test suites (e.g. `test: add smoke tests for auth endpoints`)
 - `refactor:` Code restructuring without functional behavior changes
-- `test:` Adding or updating automated test suites
-- `chore:` Maintenance tasks, dependency updates, configuration
+- `style:` Formatting, missing semicolons, or whitespace fixes
+- `chore:` Maintenance tasks, dependency updates, dev configuration
 
 Example:
 ```text
