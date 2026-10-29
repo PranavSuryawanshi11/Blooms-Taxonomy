@@ -35,3 +35,4 @@ If you discover any security vulnerability, credential exposure, or exploit with
    - **Email**: `pranavsuryawanshi955@gmail.com`
 3. Include detailed steps to reproduce the vulnerability, along with relevant environment details.
 4. We commit to acknowledging receipt within 48 hours and providing a resolution timeline.
+

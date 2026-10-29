@@ -1,12 +1,24 @@
 # BloomCraft AI &mdash; Cognitive Examination Engineering System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/Framework-Flask%203.0%2B-black?style=for-the-badge&logo=flask&logoColor=white" alt="Flask 3.0+">
-  <img src="https://img.shields.io/badge/License-Non--Commercial%20(No%20Resale)-red?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/Taxonomy-Revised%20Bloom's%20L1--L6-emerald?style=for-the-badge" alt="Bloom's Taxonomy">
-  <img src="https://img.shields.io/badge/Compliance-AICTE%20OBE%20Standards-orange?style=for-the-badge" alt="AICTE OBE">
-  <img src="https://img.shields.io/badge/LLM%20Engine-Multi--Provider%20Failover-purple?style=for-the-badge" alt="Multi-LLM Engine">
+  <a href="https://www.python.org/" target="_blank">
+    <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
+  </a>
+  <a href="https://flask.palletsprojects.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Framework-Flask%203.0%2B-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask 3.0+">
+  </a>
+  <a href="#license-commercial-rights">
+    <img src="https://img.shields.io/badge/License-Non--Commercial%20(No%20Resale)-E11D48?style=for-the-badge" alt="License">
+  </a>
+  <a href="#cognitive-tiers-blooms-taxonomy">
+    <img src="https://img.shields.io/badge/Taxonomy-Revised%20Bloom's%20L1--L6-059669?style=for-the-badge" alt="Bloom's Taxonomy">
+  </a>
+  <a href="#key-features">
+    <img src="https://img.shields.io/badge/Compliance-AICTE%20OBE%20Standards-D97706?style=for-the-badge" alt="AICTE OBE">
+  </a>
+  <a href="#environment-configuration">
+    <img src="https://img.shields.io/badge/LLM%20Engine-Multi--Provider%20Failover-7C3AED?style=for-the-badge" alt="Multi-LLM Engine">
+  </a>
 </p>
 
 ---
@@ -28,27 +40,29 @@
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [System Architecture](#-system-architecture)
-- [Key Features](#-key-features)
-- [Cognitive Tiers (Bloom's Taxonomy)](#-cognitive-tiers-blooms-taxonomy)
-- [Project Directory Structure](#-project-directory-structure)
-- [Quick Start & Installation](#-quick-start--installation)
-- [Environment Configuration](#-environment-configuration)
-- [REST API Specifications](#-rest-api-specifications)
-- [Automated Test Suite](#-automated-test-suite)
-- [Security & Confidentiality](#-security--confidentiality)
-- [Contributing & Code of Conduct](#-contributing--code-of-conduct)
-- [License](#-license)
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Key Features](#key-features)
+- [Cognitive Tiers (Bloom's Taxonomy)](#cognitive-tiers-blooms-taxonomy)
+- [Project Directory Structure](#project-directory-structure)
+- [Quick Start & Installation](#quick-start-installation)
+- [Environment Configuration](#environment-configuration)
+- [REST API Specifications](#rest-api-specifications)
+- [Automated Test Suite](#automated-test-suite)
+- [Security & Confidentiality](#security-confidentiality)
+- [Contributing & Code of Conduct](#contributing-code-of-conduct)
+- [License & Commercial Rights](#license-commercial-rights)
 
 ---
 
+<a id="overview"></a>
 ## 🌟 Overview
 
 **BloomCraft AI** is an intelligent, full-stack examination engineering workbench designed for university faculty and academic institutions. It transforms unstructured course syllabi into balanced, high-fidelity examination papers calibrated across cognitive learning tiers (L1 Remember through L6 Create), mapped directly to Course Outcomes (COs), and rendered with technical schematic diagrams and official institutional export formats.
 
 ---
 
+<a id="system-architecture"></a>
 ## 🏗️ System Architecture
 
 ```mermaid
@@ -96,6 +110,7 @@ flowchart TD
 
 ---
 
+<a id="key-features"></a>
 ## 🚀 Key Features
 
 1. **Revised Bloom's Taxonomy Calibration**: Automatically constructs cognitive distributions ensuring balanced assessment across all 6 tiers:
@@ -114,6 +129,7 @@ flowchart TD
 
 ---
 
+<a id="cognitive-tiers-blooms-taxonomy"></a>
 ## 📊 Cognitive Tiers (Bloom's Taxonomy)
 
 | Level | Cognitive Tier | Primary Verbs / Stems | Assessment Objective |
@@ -127,6 +143,7 @@ flowchart TD
 
 ---
 
+<a id="project-directory-structure"></a>
 ## 📁 Project Directory Structure
 
 ```text
@@ -188,19 +205,20 @@ flowchart TD
 
 ---
 
+<a id="quick-start-installation"></a>
 ## 🛠️ Quick Start & Installation
 
-### 1. Prerequisites
-- Python **3.9+** (3.10, 3.11, or 3.12 recommended)
-- Git
+### Step 1: Check Prerequisites
+- Python **3.9+** installed (`python --version`)
+- Git installed (`git --version`)
 
-### 2. Clone the Repository
+### Step 2: Clone the Repository
 ```bash
 git clone https://github.com/PranavSuryawanshi11/Blooms-Taxonomy.git
 cd Blooms-Taxonomy
 ```
 
-### 3. Create and Activate a Virtual Environment
+### Step 3: Create & Activate Virtual Environment
 - **Windows (Command Prompt / PowerShell):**
   ```powershell
   python -m venv venv
@@ -212,42 +230,17 @@ cd Blooms-Taxonomy
   source venv/bin/activate
   ```
 
-### 4. Install Dependencies
+### Step 4: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Configure Environment Variables
-Copy the template `.env.example` to `.env`:
-```bash
-# Windows PowerShell:
-Copy-Item .env.example .env
-
-# macOS / Linux / Bash:
-cp .env.example .env
-```
-
-Open `.env` and fill in at least one free-tier API key:
-```ini
-# Groq (Recommended - Free Tier, Fast): https://console.groq.com/keys
-GROQ_API_KEY=your_groq_api_key_here
-
-# OpenRouter (Optional): https://openrouter.ai/keys
-OPENROUTER_API_KEY=
-
-# Cerebras (Optional): https://cloud.cerebras.ai
-CEREBRAS_API_KEY=
-
-# Mistral (Optional): https://console.mistral.ai
-MISTRAL_API_KEY=
-```
-
-> **Security Note:** The `.env` file contains secret credentials and is strictly ignored in `.gitignore`. **Never commit or push `.env` to any Git repository.**
-
-### 6. Run the Application
+### Step 5: Start the Backend Server
 ```bash
 python backend/app.py
 ```
+
+### Step 6: Access the Academic Studio
 Open your browser and navigate to:
 ```text
 http://127.0.0.1:5000
@@ -255,6 +248,69 @@ http://127.0.0.1:5000
 
 ---
 
+<a id="environment-configuration"></a>
+## ⚙️ Environment Configuration
+
+BloomCraft AI supports free-tier LLM providers out of the box with zero required credit cards. Environment variables are managed using `.env` files.
+
+### 1. Initialize Your Environment File
+
+Copy the provided [`.env.example`](.env.example) to `.env`:
+
+- **Windows PowerShell:**
+  ```powershell
+  Copy-Item .env.example .env
+  ```
+- **macOS / Linux / Bash:**
+  ```bash
+  cp .env.example .env
+  ```
+
+### 2. Supported Free-Tier Providers Matrix
+
+You only need **at least ONE** free-tier API key configured to generate examination papers:
+
+| Provider | Supported Models | Free Tier Portal | Key Highlights |
+| :--- | :--- | :--- | :--- |
+| **Groq Cloud** *(Recommended)* | `llama-3.3-70b-versatile`, `mixtral-8x7b-32768` | [console.groq.com/keys](https://console.groq.com/keys) | High speed (~300 tokens/sec), generous free tier limits |
+| **OpenRouter** | `:free` catalog (DeepSeek, Llama, Qwen) | [openrouter.ai/keys](https://openrouter.ai/keys) | Access to dozens of open-source models at zero cost |
+| **Cerebras Cloud** | `llama3.1-8b`, `llama3.1-70b` | [cloud.cerebras.ai](https://cloud.cerebras.ai) | Ultra-low latency wafer-scale inference engine |
+| **Mistral AI** | `mistral-small-latest`, `codestral-latest` | [console.mistral.ai](https://console.mistral.ai) | Free Experiment plan with high academic reasoning |
+
+### 3. Environment Variables Reference
+
+Edit `.env` in the project root:
+
+```ini
+# =========================================================================
+# BloomCraft AI - Environment Configuration
+# =========================================================================
+
+# Groq Cloud API Key (Recommended)
+GROQ_API_KEY=your_groq_api_key_here
+
+# OpenRouter API Key (Optional)
+OPENROUTER_API_KEY=
+
+# Cerebras Cloud API Key (Optional)
+CEREBRAS_API_KEY=
+
+# Mistral AI API Key (Optional)
+MISTRAL_API_KEY=
+
+# Optional: Preferred Provider Failover Order (default: mistral,cerebras,groq,openrouter)
+BLOOMCRAFT_LLM_ORDER=mistral,cerebras,groq,openrouter
+
+# Optional: Server Port & Host Configuration
+PORT=5000
+FLASK_DEBUG=0
+```
+
+> **🛡️ Security Guarantee**: The `.env` file contains secret credentials and is strictly ignored in [`.gitignore`](.gitignore). **It is never committed or pushed to GitHub.** Only [`.env.example`](.env.example) is committed as a clean template.
+
+---
+
+<a id="rest-api-specifications"></a>
 ## 🔌 REST API Specifications
 
 | Method | Endpoint | Description |
@@ -271,6 +327,7 @@ http://127.0.0.1:5000
 
 ---
 
+<a id="automated-test-suite"></a>
 ## 🧪 Automated Test Suite
 
 To verify backend modules, cognitive calibration, and user authentication isolation:
@@ -287,6 +344,7 @@ python backend/test_e2e_live.py
 
 ---
 
+<a id="security-confidentiality"></a>
 ## 🔒 Security & Confidentiality
 
 - **Zero-Credential Commits**: Secret `.env` files are ignored across all folders by `.gitignore`.
@@ -296,6 +354,7 @@ python backend/test_e2e_live.py
 
 ---
 
+<a id="contributing-code-of-conduct"></a>
 ## 🤝 Contributing & Code of Conduct
 
 We welcome community feedback, issue reports, and non-commercial open-source enhancements.
@@ -304,6 +363,7 @@ We welcome community feedback, issue reports, and non-commercial open-source enh
 
 ---
 
+<a id="license-commercial-rights"></a>
 ## 📄 License & Commercial Rights
 
 Copyright &copy; 2026 **Pranav Suryawanshi** ([@PranavSuryawanshi11](https://github.com/PranavSuryawanshi11)). All rights reserved.

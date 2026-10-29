@@ -79,3 +79,4 @@ feat(diagram_ai): add algorithmic SVG generation for binary search trees
 2. Verify that **NO `.env` or sensitive credential files** are tracked (`git status`).
 3. Push to your fork and submit a Pull Request against the `main` branch.
 4. Fill in the Pull Request template completely.
+
