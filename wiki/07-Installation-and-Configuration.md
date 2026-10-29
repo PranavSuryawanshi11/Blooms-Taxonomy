@@ -1,4 +1,6 @@
-# Installation & Local Setup Guide
+# Installation & Setup Guide
+
+> 🌐 **Live Cloud Deployment**: Access the hosted instance directly at [https://blooms-taxonomy.onrender.com/](https://blooms-taxonomy.onrender.com/)
 
 Follow this guide to deploy BloomCraft AI on Windows, macOS, or Linux.
 

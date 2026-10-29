@@ -1,6 +1,9 @@
 # BloomCraft AI &mdash; Cognitive Examination Engineering System
 
 <p align="center">
+  <a href="https://blooms-taxonomy.onrender.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo">
+  </a>
   <a href="https://www.python.org/" target="_blank">
     <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
   </a>
@@ -24,6 +27,8 @@
 ---
 
 > **University-grade automated examination engineering studio adhering to Revised Bloom's Taxonomy, automated syllabus ingestion, cognitive blueprinting, outcome-based education (OBE) standards, and AICTE examination reform policies.**
+>
+> 🚀 **Live Production Deployment**: [https://blooms-taxonomy.onrender.com/](https://blooms-taxonomy.onrender.com/)
 
 ---
 
@@ -40,6 +45,7 @@
 
 ## 📑 Table of Contents
 
+- [Live Demo](#live-demo)
 - [Overview](#overview)
 - [System Architecture](#system-architecture)
 - [Key Features](#key-features)
@@ -52,6 +58,17 @@
 - [Security & Confidentiality](#security-confidentiality)
 - [Contributing & Code of Conduct](#contributing-code-of-conduct)
 - [License & Commercial Rights](#license-commercial-rights)
+
+---
+
+<a id="live-demo"></a>
+## 🌐 Live Demo & Deployment
+
+The system is deployed and available live on Render:
+
+👉 **[https://blooms-taxonomy.onrender.com/](https://blooms-taxonomy.onrender.com/)**
+
+Academic faculty and evaluators can explore the complete examination engineering workflow, upload syllabus documents, configure cognitive blueprint matrices, and synthesize AICTE-compliant question papers directly in the cloud.
 
 ---
 

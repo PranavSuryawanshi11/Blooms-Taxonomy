@@ -10,6 +10,9 @@
 - **[Installation & Setup](07-Installation-and-Configuration)**
 
 ---
+**Live Application**:
+- [Open Live Demo](https://blooms-taxonomy.onrender.com/)
+
 **Repository**:
 [GitHub Project](https://github.com/PranavSuryawanshi11/Blooms-Taxonomy)
 
