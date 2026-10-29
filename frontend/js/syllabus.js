@@ -102,19 +102,19 @@ window.SyllabusModule = {
       chip.addEventListener("click", () => {
         document.querySelectorAll("#sample-chips-container .chip").forEach(c => c.classList.remove("active"));
         chip.classList.add("active");
-        this.loadSampleSyllabus(s);
+        this.loadSampleSyllabus(s, true);
       });
       container.appendChild(chip);
     });
 
-    // Auto-load first sample (DBMS) by default for immediate preview
+    // Auto-load first sample (DBMS) by default for immediate preview without toast notification
     if (samples.length > 0 && !window.AppState.currentSyllabus) {
       container.children[0].classList.add("active");
-      this.loadSampleSyllabus(samples[0]);
+      this.loadSampleSyllabus(samples[0], false);
     }
   },
 
-  loadSampleSyllabus(sample) {
+  loadSampleSyllabus(sample, showNotification = false) {
     window.AppState.currentSyllabus = JSON.parse(JSON.stringify(sample));
     
     // Fill course info fields
@@ -133,7 +133,10 @@ window.SyllabusModule = {
     this.renderParsedSyllabus(sample);
     this.renderExtractedDocument(docText);
 
-    showToast(`Loaded ${sample.code}: ${sample.name} curriculum.`, "success");
+    // Only show toast when explicitly requested by user action and faculty is logged in
+    if (showNotification && (window.AppState?.currentUser || window.AuthModule?.currentUser)) {
+      showToast(`Loaded ${sample.code}: ${sample.name} curriculum.`, "success");
+    }
   },
 
   async parseRawText() {
