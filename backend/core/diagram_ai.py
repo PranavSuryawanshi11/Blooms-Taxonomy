@@ -508,9 +508,11 @@ def _text(x: float, y: float, s: str, size: float = FS, bold: bool = False, fill
     style = ""
     if halo:
         style = ' stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke"'
+    weight_attr = ' font-weight="bold"' if bold else ''
+    italic_attr = ' font-style="italic"' if italic else ''
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" text-anchor="{anchor}" fill="{fill}"'
-        f'{" font-weight=\"bold\"" if bold else ""}{" font-style=\"italic\"" if italic else ""}{style}{extra}>{_esc(s)}</text>'
+        f'{weight_attr}{italic_attr}{style}{extra}>{_esc(s)}</text>'
     )
 
 
@@ -1295,8 +1297,8 @@ def _render_plot(spec: Dict[str, Any], uid: str) -> str:
         else:
             d = _path_from_points(pts) if s["style"] == "curve" and len(pts) > 2 else \
                 "M " + " L ".join(f"{a:.1f} {b:.1f}" for a, b in pts)
-            parts.append(f'<path d="{d}" fill="none" stroke="{col}" stroke-width="2"'
-                         f'{" stroke-dasharray=\"" + dash + "\"" if dash else ""}/>')
+            dash_attr = f' stroke-dasharray="{dash}"' if dash else ''
+            parts.append(f'<path d="{d}" fill="none" stroke="{col}" stroke-width="2"{dash_attr}/>')
     for a in p["annotations"]:
         parts.append(f'<circle cx="{X(a["x"]):.1f}" cy="{Y(a["y"]):.1f}" r="4" fill="#FFFFFF" stroke="{INK}" stroke-width="1.6"/>')
         parts.append(_text(X(a["x"]) + 8, Y(a["y"]) - 8, a["text"], 11, anchor="start", italic=True, halo=True))
@@ -1311,8 +1313,8 @@ def _render_plot(spec: Dict[str, Any], uid: str) -> str:
             if s["style"] == "scatter":
                 parts.append(f'<circle cx="{lx + 16:.1f}" cy="{yy - 4:.1f}" r="4" fill="{col}"/>')
             else:
-                parts.append(f'<line x1="{lx + 6:.1f}" y1="{yy - 4:.1f}" x2="{lx + 26:.1f}" y2="{yy - 4:.1f}" stroke="{col}" stroke-width="2"'
-                             f'{" stroke-dasharray=\"" + dash + "\"" if dash else ""}/>')
+                dash_attr = f' stroke-dasharray="{dash}"' if dash else ''
+                parts.append(f'<line x1="{lx + 6:.1f}" y1="{yy - 4:.1f}" x2="{lx + 26:.1f}" y2="{yy - 4:.1f}" stroke="{col}" stroke-width="2"{dash_attr}/>')
             parts.append(_text(lx + 32, yy, s["name"], 11, anchor="start"))
     bnds = _Bounds()
     bnds.box(0, 0, W, H)
