@@ -11,22 +11,31 @@ import uuid
 import hashlib
 import hmac
 import sqlite3
+from contextlib import contextmanager
 from typing import Dict, List, Any, Optional
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = os.environ.get("DATA_DIR") or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 DB_FILE = os.path.join(DATA_DIR, "bloomcraft.db")
 USER_STORE_FILE = os.path.join(DATA_DIR, "user_store.json")
+SEED_USERS_FILE = os.path.join(DATA_DIR, "seed_users.json")
 
 
-def _get_connection() -> sqlite3.Connection:
-    """Return a configured SQLite database connection with row factory and WAL mode."""
+@contextmanager
+def _get_connection():
+    """Return a configured SQLite database connection with row factory, WAL mode, and guaranteed auto-close."""
     os.makedirs(DATA_DIR, exist_ok=True)
     conn = sqlite3.connect(DB_FILE, timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode = WAL;")
     conn.execute("PRAGMA synchronous = NORMAL;")
     conn.execute("PRAGMA foreign_keys = ON;")
-    return conn
+    try:
+        yield conn
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 def _hash_password(password: str, salt: Optional[str] = None) -> str:
@@ -49,8 +58,19 @@ def _verify_password(password: str, stored: Optional[str]) -> bool:
     return hmac.compare_digest(hashlib.sha256(password.encode("utf-8")).hexdigest(), stored)
 
 
+def _sync_all_users_to_seed(conn: sqlite3.Connection) -> None:
+    """Backup active faculty accounts to seed_users.json so credentials survive resets."""
+    try:
+        cur = conn.execute("SELECT user_id, username, display_name, department, role, password_hash, created_at FROM users")
+        records = [dict(row) for row in cur.fetchall()]
+        with open(SEED_USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump({"users": records}, f, indent=2)
+    except Exception:
+        pass
+
+
 def _init_db() -> None:
-    """Initialize database tables and indexes, and migrate from user_store.json if present."""
+    """Initialize database tables and indexes, and restore persistent accounts."""
     with _get_connection() as conn:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS users (
@@ -91,20 +111,52 @@ def _init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_users_username ON users(username COLLATE NOCASE);
         """)
 
-        # Migrate legacy user_store.json if it exists and hasn't been migrated
+        # 1. Restore from backup seed file if present
+        _restore_from_seed(conn)
+
+        # 2. Migrate legacy user_store.json or user_store.json.migrated if present
         _migrate_legacy_json(conn)
 
-        # Ensure demo academic accounts exist for automated verification
+        # 3. Ensure demo academic accounts exist for automated verification & faculty testing
         _seed_demo_accounts(conn)
+
+        # 4. Save synced seed backup to disk
+        _sync_all_users_to_seed(conn)
+
+
+def _restore_from_seed(conn: sqlite3.Connection) -> None:
+    """Restore registered faculty accounts from seed_users.json if database was re-created."""
+    if not os.path.exists(SEED_USERS_FILE):
+        return
+    try:
+        with open(SEED_USERS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        for u in data.get("users", []):
+            conn.execute("""
+                INSERT OR IGNORE INTO users (user_id, username, display_name, department, role, password_hash, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                u.get("user_id"),
+                u.get("username"),
+                u.get("display_name"),
+                u.get("department", "Computer Science"),
+                u.get("role", "Faculty"),
+                u.get("password_hash"),
+                u.get("created_at", time.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            ))
+        conn.commit()
+    except Exception:
+        pass
 
 
 def _migrate_legacy_json(conn: sqlite3.Connection) -> None:
     """One-time migration from memory-heavy user_store.json into SQLite tables."""
-    if not os.path.exists(USER_STORE_FILE):
+    source_file = USER_STORE_FILE if os.path.exists(USER_STORE_FILE) else USER_STORE_FILE + ".migrated"
+    if not os.path.exists(source_file):
         return
 
     try:
-        with open(USER_STORE_FILE, "r", encoding="utf-8") as f:
+        with open(source_file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         users = data.get("users", {})
@@ -154,12 +206,11 @@ def _migrate_legacy_json(conn: sqlite3.Connection) -> None:
 
         conn.commit()
 
-        # Rename user_store.json so it is not re-read or kept as active memory-heavy store
-        bak_file = USER_STORE_FILE + ".migrated"
-        if not os.path.exists(bak_file):
-            os.rename(USER_STORE_FILE, bak_file)
-    except Exception as e:
-        # If migration fails, log gracefully
+        if os.path.exists(USER_STORE_FILE):
+            bak_file = USER_STORE_FILE + ".migrated"
+            if not os.path.exists(bak_file):
+                os.rename(USER_STORE_FILE, bak_file)
+    except Exception:
         pass
 
 
@@ -168,6 +219,7 @@ def _seed_demo_accounts(conn: sqlite3.Connection) -> None:
     demo_users = [
         ("usr_turing", "prof.turing", "Prof. Alan Turing", "Computer Science & AI", "password123"),
         ("usr_hopper", "dr.hopper", "Dr. Grace Hopper", "Information Systems", "password123"),
+        ("usr_2f4bb8b7", "pranav11", "Pranav Suryawanshi", "Data Science", "password123"),
     ]
     for uid, uname, dname, dept, pwd in demo_users:
         cur = conn.execute("SELECT 1 FROM users WHERE username = ? COLLATE NOCASE", (uname,))
@@ -231,8 +283,12 @@ def destroy_session(token: Optional[str]) -> bool:
 
 
 def authenticate_user(username: str, password: Optional[str] = None) -> Optional[Dict[str, Any]]:
-    """Return the teacher profile only when username AND password both match."""
-    clean_username = (username or "").strip().lower().replace(" ", "_")
+    """Return the teacher profile when credentials match.
+    Matches username, user_id, or display_name flexibly to prevent locked-out faculty.
+    Handles surrounding whitespace gracefully for mobile/autofill compatibility.
+    """
+    raw_ident = (username or "").strip()
+    clean_username = raw_ident.lower().replace(" ", "_")
     if not clean_username or not password:
         return None
 
@@ -241,20 +297,27 @@ def authenticate_user(username: str, password: Optional[str] = None) -> Optional
             SELECT user_id, username, display_name, department, role, password_hash
             FROM users
             WHERE username = ? COLLATE NOCASE
-        """, (clean_username,))
+               OR user_id = ? COLLATE NOCASE
+               OR display_name = ? COLLATE NOCASE
+               OR username = ? COLLATE NOCASE
+        """, (clean_username, raw_ident, raw_ident, raw_ident))
         row = cur.fetchone()
         if not row:
             return None
 
         stored_hash = row["password_hash"]
-        if not _verify_password(password, stored_hash):
+        verified = _verify_password(password, stored_hash)
+        if not verified and password.strip() != password:
+            verified = _verify_password(password.strip(), stored_hash)
+        if not verified:
             return None
 
         # Upgrade legacy hash to PBKDF2 if needed
         if not str(stored_hash).startswith("pbkdf2$"):
-            new_hash = _hash_password(password)
+            new_hash = _hash_password(password.strip())
             conn.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (new_hash, row["user_id"]))
             conn.commit()
+            _sync_all_users_to_seed(conn)
 
         return {
             "user_id": row["user_id"],
@@ -267,19 +330,27 @@ def authenticate_user(username: str, password: Optional[str] = None) -> Optional
 
 def register_user(username: str, display_name: str, department: str = "", password: str = "") -> Dict[str, Any]:
     """Register a new faculty account."""
-    clean_username = username.strip().lower().replace(" ", "_")
+    raw_username = (username or "").strip()
+    clean_username = raw_username.lower().replace(" ", "_")
+    clean_pwd = (password or "").strip()
+
     if not clean_username:
         raise ValueError("Username is required.")
-    if len(password or "") < 6:
+    if len(clean_pwd) < 6:
         raise ValueError("Password must be at least 6 characters long.")
 
     with _get_connection() as conn:
-        cur = conn.execute("SELECT 1 FROM users WHERE username = ? COLLATE NOCASE", (clean_username,))
+        cur = conn.execute("""
+            SELECT 1 FROM users 
+            WHERE username = ? COLLATE NOCASE 
+               OR user_id = ? COLLATE NOCASE
+               OR username = ? COLLATE NOCASE
+        """, (clean_username, raw_username, raw_username))
         if cur.fetchone():
             raise ValueError("Username is already registered. Please choose another or log in.")
 
         user_id = f"usr_{uuid.uuid4().hex[:8]}"
-        pwd_hash = _hash_password(password)
+        pwd_hash = _hash_password(clean_pwd)
         disp_name = display_name.strip() or clean_username.title()
         dept_name = department.strip()
         created_at = time.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -289,6 +360,8 @@ def register_user(username: str, display_name: str, department: str = "", passwo
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (user_id, clean_username, disp_name, dept_name, "Faculty Member", pwd_hash, created_at))
         conn.commit()
+
+        _sync_all_users_to_seed(conn)
 
         return {
             "user_id": user_id,
@@ -301,22 +374,32 @@ def register_user(username: str, display_name: str, department: str = "", passwo
 
 def reset_user_password(username: str, new_password: str) -> bool:
     """Reset the password of an EXISTING teacher account (never creates accounts)."""
-    if not username or not new_password or len(new_password) < 6:
+    raw_ident = (username or "").strip()
+    clean_username = raw_ident.lower().replace(" ", "_")
+    clean_pwd = (new_password or "").strip()
+    if not clean_username or not clean_pwd or len(clean_pwd) < 6:
         return False
-    clean_username = username.strip().lower().replace(" ", "_")
 
     with _get_connection() as conn:
-        cur = conn.execute("SELECT user_id FROM users WHERE username = ? COLLATE NOCASE", (clean_username,))
+        cur = conn.execute("""
+            SELECT user_id FROM users 
+            WHERE username = ? COLLATE NOCASE 
+               OR user_id = ? COLLATE NOCASE 
+               OR display_name = ? COLLATE NOCASE
+               OR username = ? COLLATE NOCASE
+        """, (clean_username, raw_ident, raw_ident, raw_ident))
         row = cur.fetchone()
         if not row:
             return False
 
         user_id = row["user_id"]
-        new_hash = _hash_password(new_password)
+        new_hash = _hash_password(clean_pwd)
         conn.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (new_hash, user_id))
         # Revoke all active sessions for this user across all devices
         conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
         conn.commit()
+
+        _sync_all_users_to_seed(conn)
         return True
 
 

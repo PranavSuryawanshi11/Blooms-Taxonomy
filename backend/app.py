@@ -523,19 +523,21 @@ def auth_login():
     """Authenticate user with username and password, returning an isolated session token."""
     try:
         data = request.get_json() or {}
-        username = data.get("username", "")
-        password = data.get("password", "")
+        username = (data.get("username") or "").strip()
+        password = data.get("password") or ""
         if not username:
-            return jsonify({"success": False, "error": "Username is required."}), 400
+            return jsonify({"success": False, "error": "Faculty username or ID is required."}), 400
+        if not password:
+            return jsonify({"success": False, "error": "Password is required."}), 400
 
         user = authenticate_user(username, password)
         if not user:
-            return jsonify({"success": False, "error": "Incorrect username or password."}), 401
+            return jsonify({"success": False, "error": "Incorrect username or password. Please verify your credentials."}), 401
 
         token = create_session(user["user_id"])
         return jsonify({"success": True, "user": user, "token": token})
     except Exception as e:
-        logger.error(f"Error during login: {e}")
+        logger.error(f"Error during login: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
 

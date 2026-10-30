@@ -17,7 +17,6 @@ const AuthModule = {
     if (this._initialized) return;
     this._initialized = true;
 
-    // 1. Restore a saved session only if the server still accepts the token; otherwise require login
     this.bindEvents();
     const savedToken = localStorage.getItem("bloom_faculty_token");
     let restored = false;
@@ -30,20 +29,28 @@ const AuthModule = {
           this.showDashboardView();
           await this.refreshHistory();
           restored = true;
+        } else if (res.status === 401) {
+          // Token explicitly rejected by server
+          localStorage.removeItem("bloom_faculty_user");
+          localStorage.removeItem("bloom_faculty_token");
         }
       } catch (e) {
-        console.warn("Session check failed:", e);
+        console.warn("Session check failed (backend may be reloading):", e);
+        // Do NOT wipe localStorage on network glitch or during server reload!
+        const savedUserStr = localStorage.getItem("bloom_faculty_user");
+        if (savedUserStr) {
+          try {
+            const savedUser = JSON.parse(savedUserStr);
+            this.setSession(savedUser, savedToken);
+            this.showDashboardView();
+            restored = true;
+          } catch (_) {}
+        }
       }
     }
     if (!restored) {
-      localStorage.removeItem("bloom_faculty_user");
-      localStorage.removeItem("bloom_faculty_token");
       this.showAuthGate();
     }
-    return;
-
-    // 2. Bind all event listeners
-    this.bindEvents();
   },
 
   activateDefaultSession() {
@@ -248,45 +255,32 @@ const AuthModule = {
       });
     }
 
-    // Login Form Submit (Form submit, button click, and enter key triggers)
+    // Login Form Submit (Single robust submit listener prevents race conditions)
     if (formLogin) {
       formLogin.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const username = document.getElementById("login-username").value.trim();
-        const password = document.getElementById("login-password").value;
+        const usernameInput = document.getElementById("login-username");
+        const pwdInput = document.getElementById("login-password");
+        const username = usernameInput ? usernameInput.value.trim() : "";
+        const password = pwdInput ? pwdInput.value : "";
         if (!username || !password) return;
         await this.login(username, password);
       });
     }
 
-    const submitLoginBtn = document.getElementById("btn-submit-login");
-    if (submitLoginBtn) {
-      submitLoginBtn.addEventListener("click", async (e) => {
-        const usernameInput = document.getElementById("login-username");
+    // Quick demo account pills
+    document.querySelectorAll(".btn-demo-quick-login").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const u = btn.getAttribute("data-user");
+        const p = btn.getAttribute("data-pwd");
+        const userInput = document.getElementById("login-username");
         const pwdInput = document.getElementById("login-password");
-        const username = usernameInput ? usernameInput.value.trim() : "";
-        const password = pwdInput ? pwdInput.value : "";
-        if (username && password) {
-          e.preventDefault();
-          await this.login(username, password);
-        }
+        if (userInput) userInput.value = u;
+        if (pwdInput) pwdInput.value = p;
+        this.login(u, p);
       });
-    }
-
-    const loginPwdField = document.getElementById("login-password");
-    if (loginPwdField) {
-      loginPwdField.addEventListener("keydown", async (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const usernameInput = document.getElementById("login-username");
-          const username = usernameInput ? usernameInput.value.trim() : "";
-          const password = loginPwdField.value;
-          if (username && password) {
-            await this.login(username, password);
-          }
-        }
-      });
-    }
+    });
 
     // Signup Form Submit
     if (formSignup) {
@@ -326,7 +320,12 @@ const AuthModule = {
     }
   },
 
+  _isLoggingIn: false,
+
   async login(username, password) {
+    if (this._isLoggingIn) return;
+    this._isLoggingIn = true;
+
     const submitBtn = document.getElementById("btn-submit-login");
     const origHtml = submitBtn ? submitBtn.innerHTML : "";
     if (submitBtn) {
@@ -338,7 +337,7 @@ const AuthModule = {
       const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username: (username || "").trim(), password: password || "" })
       });
       const data = await res.json();
 
@@ -354,6 +353,7 @@ const AuthModule = {
       console.warn("Login request failed:", err);
       this.showAuthError("login", "Cannot reach the server. Make sure the backend is running (python backend/app.py) and try again.");
     } finally {
+      this._isLoggingIn = false;
       if (submitBtn) {
         submitBtn.innerHTML = origHtml;
         submitBtn.disabled = false;

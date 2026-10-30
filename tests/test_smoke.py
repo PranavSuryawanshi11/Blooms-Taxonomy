@@ -110,3 +110,21 @@ def test_auth_login_success(client):
     me_data = me_response.get_json()
     assert me_data.get("success") is True
     assert me_data["user"]["username"] == "prof.turing"
+
+@pytest.mark.smoke
+def test_auth_login_by_user_id_and_display_name(client):
+    """Verify login works flexibly with user_id or display_name."""
+    # Login with user_id
+    res_id = client.post("/api/auth/login", json={"username": "usr_turing", "password": "password123"})
+    assert res_id.status_code == 200
+    assert res_id.get_json()["success"] is True
+
+    # Login with display_name
+    res_name = client.post("/api/auth/login", json={"username": "Prof. Alan Turing", "password": "password123"})
+    assert res_name.status_code == 200
+    assert res_name.get_json()["success"] is True
+
+    # Login with trailing space in password (mobile autofill compatibility)
+    res_ws = client.post("/api/auth/login", json={"username": "prof.turing", "password": "password123 "})
+    assert res_ws.status_code == 200
+    assert res_ws.get_json()["success"] is True

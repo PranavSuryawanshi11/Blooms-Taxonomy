@@ -57,3 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 - **Startup UI Notification**: Suppressed premature default curriculum toast message on unauthenticated initial page load (`frontend/js/syllabus.js`).
+- **Faculty Authentication Resilience & Persistence**:
+  - Resolved SQLite connection leaks and Windows WAL locking during server reloads by encapsulating database connections in a strict context manager with guaranteed auto-close.
+  - Added dual-layer persistent credential synchronization (`seed_users.json`) preventing account loss across server restarts, ephemeral disk wipes (e.g. Render), or clean git checkouts.
+  - Implemented flexible identifier matching in `authenticate_user` allowing faculty to log in via username, user ID, or display name with whitespace resilience.
+  - Fixed duplicate frontend submit listeners causing concurrent authentication request collisions.
+  - Added 1-click instant demo faculty sign-in chips on the authentication portal.
+

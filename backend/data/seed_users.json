@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "user_id": "usr_2f4bb8b7",
+      "username": "pranav11",
+      "display_name": "Pranav",
+      "department": "Data Science",
+      "role": "Faculty Member",
+      "password_hash": "pbkdf2$52e283d67b0442da800c7d929e48a21e$49c23450b03546e9ac64dba4d12dfa508e42bbb74ebf407303d18830cde3d5eb",
+      "created_at": "2026-10-29T12:18:59Z"
+    },
+    {
+      "user_id": "usr_turing",
+      "username": "prof.turing",
+      "display_name": "Prof. Alan Turing",
+      "department": "Computer Science & AI",
+      "role": "Faculty Member",
+      "password_hash": "pbkdf2$d52248d6885847ae8e63f0e7e10fd429$ce59c69065a760b504e29457a33240874ca50a07c041f9fe270ad959d91214e6",
+      "created_at": "2026-10-29T23:28:43Z"
+    },
+    {
+      "user_id": "usr_hopper",
+      "username": "dr.hopper",
+      "display_name": "Dr. Grace Hopper",
+      "department": "Information Systems",
+      "role": "Faculty Member",
+      "password_hash": "pbkdf2$39b25ca252fd400a9c70e6c2a4925b79$80085f575dfe80d83901432acacbd66f90a76ad54903d1ad4c9eb886b8985617",
+      "created_at": "2026-10-29T23:28:43Z"
+    },
+    {
+      "user_id": "usr_2fd35dce",
+      "username": "pranavsuuryawanshi",
+      "display_name": "Pranav",
+      "department": "Data Science",
+      "role": "Faculty Member",
+      "password_hash": "pbkdf2$6e3cfb2f70844347bdfcf2384f1bdac5$75d7e950187e37034390394e899d494a183e52aa5935b12026590274cbb5e08b",
+      "created_at": "2026-10-29T23:38:04Z"
+    }
+  ]
+}
