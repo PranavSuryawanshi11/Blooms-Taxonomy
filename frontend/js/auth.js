@@ -26,6 +26,7 @@ const AuthModule = {
         const data = await res.json();
         if (res.ok && data.success && data.user) {
           this.setSession(data.user, savedToken);
+          if (data.guest_quota) window.AppState.guestQuota = data.guest_quota;
           this.showDashboardView();
           await this.refreshHistory();
           restored = true;
@@ -112,6 +113,10 @@ const AuthModule = {
     try {
       this.updateNavbarUserUI();
       this.updateSyllabusUserBanner();
+      if (window.QuestionSetsModule && window.QuestionSetsModule.loadQuestionSets) {
+        window.QuestionSetsModule.loadQuestionSets();
+      }
+      if (window.TemplateImport) window.TemplateImport.reloadTemplates();
     } catch (e) {
       console.warn("UI banner update notice:", e);
     }
@@ -231,8 +236,13 @@ const AuthModule = {
           this.showAuthError("forgot", "Please enter your faculty username or ID.");
           return;
         }
-        if (newPwd.length < 6) {
-          this.showAuthError("forgot", "New password must be at least 6 characters long.");
+        const weakNew = this.passwordProblem(newPwd);
+        if (weakNew) {
+          this.showAuthError("forgot", weakNew);
+          return;
+        }
+        if (!document.getElementById("forgot-recovery-code").value.trim()) {
+          this.showAuthError("forgot", "Please enter your recovery code.");
           return;
         }
         if (newPwd !== confirmPwd) {
@@ -268,19 +278,42 @@ const AuthModule = {
       });
     }
 
-    // Quick demo account pills
-    document.querySelectorAll(".btn-demo-quick-login").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const u = btn.getAttribute("data-user");
-        const p = btn.getAttribute("data-pwd");
-        const userInput = document.getElementById("login-username");
-        const pwdInput = document.getElementById("login-password");
-        if (userInput) userInput.value = u;
-        if (pwdInput) pwdInput.value = p;
-        this.login(u, p);
+    // Continue as guest (1 paper per device)
+    const guestBtn = document.getElementById("btn-guest-login");
+    if (guestBtn) {
+      guestBtn.addEventListener("click", () => this.guestLogin());
+    }
+
+    // Recovery code dialog
+    const savedChk = document.getElementById("recovery-saved-check");
+    const contBtn = document.getElementById("btn-recovery-continue");
+    if (savedChk && contBtn) {
+      savedChk.addEventListener("change", () => { contBtn.disabled = !savedChk.checked; });
+      contBtn.addEventListener("click", () => this.finishRecoveryDialog());
+    }
+    const copyBtn = document.getElementById("btn-copy-recovery");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        const code = document.getElementById("recovery-code-value").textContent;
+        try { await navigator.clipboard.writeText(code); window.showToast("Recovery code copied.", "success"); }
+        catch (e) { window.showToast("Copy failed. Please select and copy the code manually.", "error"); }
       });
-    });
+    }
+    const toSignup = document.getElementById("btn-guest-to-signup");
+    if (toSignup) {
+      toSignup.addEventListener("click", async () => {
+        document.getElementById("modal-guest-limit").classList.remove("active");
+        await this.logout(true);
+        const t = document.getElementById("tab-btn-signup");
+        if (t) t.click();
+      });
+    }
+
+    // Password strength meter on sign-up
+    const signupPwd = document.getElementById("signup-password");
+    if (signupPwd) {
+      signupPwd.addEventListener("input", () => this.updatePasswordMeter(signupPwd.value));
+    }
 
     // Signup Form Submit
     if (formSignup) {
@@ -292,8 +325,9 @@ const AuthModule = {
         const password = document.getElementById("signup-password").value;
         const confirmPwd = document.getElementById("signup-confirm-pwd").value;
 
-        if (password.length < 6) {
-          this.showAuthError("signup", "Password must be at least 6 characters long.");
+        const weak = this.passwordProblem(password);
+        if (weak) {
+          this.showAuthError("signup", weak);
           return;
         }
         if (password !== confirmPwd) {
@@ -318,6 +352,90 @@ const AuthModule = {
         this.filterHistoryList(query);
       });
     }
+  },
+
+  passwordProblem(pwd) {
+    if (!pwd || pwd.length < 8) return "Password must be at least 8 characters long.";
+    if (pwd.length > 128) return "Password must be 128 characters or fewer.";
+    if (!/[A-Za-z]/.test(pwd) || !/\d/.test(pwd)) return "Password must contain at least one letter and one number.";
+    return null;
+  },
+
+  updatePasswordMeter(pwd) {
+    const bar = document.getElementById("pwd-meter-bar");
+    const txt = document.getElementById("pwd-meter-text");
+    if (!bar || !txt) return;
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+    if (/\d/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) score++;
+    const labels = ["Too weak", "Weak", "Fair", "Good", "Strong"];
+    const colors = ["#EF4444", "#F97316", "#F59E0B", "#10B981", "#059669"];
+    const i = pwd ? Math.min(score, 4) : 0;
+    bar.style.width = pwd ? `${(i + 1) * 20}%` : "0%";
+    bar.style.background = colors[i];
+    txt.textContent = pwd ? `Password strength: ${labels[i]}` : "Use at least 8 characters with letters and numbers.";
+  },
+
+  _pendingAfterRecovery: null,
+
+  showRecoveryDialog(code, onContinue) {
+    this._pendingAfterRecovery = onContinue;
+    document.getElementById("recovery-code-value").textContent = code || "";
+    const chk = document.getElementById("recovery-saved-check");
+    const btn = document.getElementById("btn-recovery-continue");
+    if (chk) chk.checked = false;
+    if (btn) btn.disabled = true;
+    document.getElementById("modal-recovery-code").classList.add("active");
+  },
+
+  async finishRecoveryDialog() {
+    document.getElementById("modal-recovery-code").classList.remove("active");
+    const fn = this._pendingAfterRecovery;
+    this._pendingAfterRecovery = null;
+    if (fn) await fn();
+  },
+
+  async guestLogin() {
+    const btn = document.getElementById("btn-guest-login");
+    const orig = btn ? btn.innerHTML : "";
+    if (btn) { btn.disabled = true; btn.innerHTML = "<span>Starting guest session...</span>"; }
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/guest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Device-Id": window.getDeviceId() },
+        body: JSON.stringify({ device_id: window.getDeviceId() })
+      });
+      const data = await res.json();
+      if (data.success && data.user && data.token) {
+        this.setSession(data.user, data.token);
+        this.setGuestQuota(data.guest_quota);
+        this.showDashboardView();
+        const q = data.guest_quota || {};
+        window.showToast(q.remaining === 0
+          ? "Guest session started. This device has already used its 1 free paper."
+          : "Guest session started. You can generate 1 question paper on this device.", "info");
+        await this.refreshHistory();
+      } else {
+        this.showAuthError("login", data.error || "Guest sign-in failed.");
+      }
+    } catch (err) {
+      console.warn("Guest sign-in failed:", err);
+      this.showAuthError("login", "Cannot reach the server. Please try again.");
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+    }
+  },
+
+  setGuestQuota(q) {
+    window.AppState.guestQuota = q || null;
+    this.updateSyllabusUserBanner();
+    this.updateNavbarUserUI();
+  },
+
+  showGuestLimitDialog() {
+    document.getElementById("modal-guest-limit").classList.add("active");
   },
 
   _isLoggingIn: false,
@@ -379,9 +497,11 @@ const AuthModule = {
 
       if (data.success && data.user && data.token) {
         this.setSession(data.user, data.token);
-        this.showDashboardView();
-        window.showToast(`Faculty account created! Welcome, ${data.user.display_name}.`, "success");
-        await this.refreshHistory();
+        this.showRecoveryDialog(data.recovery_code, async () => {
+          this.showDashboardView();
+          window.showToast(`Faculty account created. Welcome, ${data.user.display_name}.`, "success");
+          await this.refreshHistory();
+        });
       } else {
         this.showAuthError("signup", data.error || "Registration failed. Please choose another username.");
       }
@@ -409,7 +529,7 @@ const AuthModule = {
     this.updateSyllabusUserBanner();
   },
 
-  async logout() {
+  async logout(silent = false) {
     try {
       if (this.authToken) {
         await fetch(`${API_BASE}/api/auth/logout`, {
@@ -430,8 +550,13 @@ const AuthModule = {
     window.AppState.currentUser = null;
     window.AppState.authToken = null;
 
+    window.AppState.guestQuota = null;
+    if (window.AppState.examTemplates) {
+      Object.keys(window.AppState.examTemplates).forEach(k => { if (window.AppState.examTemplates[k].is_custom) delete window.AppState.examTemplates[k]; });
+    }
+    if (window.TemplateImport) window.TemplateImport.populateSelect("rcpit_sem_65");
     this.showAuthGate();
-    window.showToast("Signed out successfully. Authentication required to access workspace.", "info");
+    if (!silent) window.showToast("Signed out successfully.", "info");
   },
 
   updateNavbarUserUI() {
@@ -441,18 +566,18 @@ const AuthModule = {
     if (this.currentUser) {
       const initials = (this.currentUser.display_name || "Faculty")
         .split(" ")
-        .map(n => n[0])
+        .map(n => n[0] || "")
         .slice(0, 2)
         .join("")
         .toUpperCase();
 
       container.innerHTML = `
         <div class="user-nav-wrapper">
-          <button class="user-profile-btn" id="btn-user-dropdown-toggle" title="Faculty Profile: ${this.currentUser.display_name}">
+          <button class="user-profile-btn" id="btn-user-dropdown-toggle" title="Faculty Profile: ${window.escapeHtml(this.currentUser.display_name)}">
             <div class="user-avatar-badge">${initials}</div>
             <div class="user-profile-text">
-              <span class="user-profile-name">${this.currentUser.display_name}</span>
-              <span class="user-profile-dept">${this.currentUser.department || 'Faculty'}</span>
+              <span class="user-profile-name">${window.escapeHtml(this.currentUser.display_name)}</span>
+              <span class="user-profile-dept">${window.escapeHtml(this.currentUser.department || 'Faculty')}</span>
             </div>
             <svg class="icon-svg icon-xs" viewBox="0 0 24 24" style="color: var(--text-muted);">
               <polyline points="6 9 12 15 18 9"/>
@@ -461,8 +586,8 @@ const AuthModule = {
           
           <div class="user-dropdown-menu" id="user-dropdown-menu">
             <div class="dropdown-header">
-              <strong>${this.currentUser.display_name}</strong>
-              <div style="font-size: 11px; color: var(--text-muted);">${this.currentUser.role || 'Faculty Member'} &bull; ${this.currentUser.department || ''}</div>
+              <strong>${window.escapeHtml(this.currentUser.display_name)}</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">${window.escapeHtml(this.currentUser.role || 'Faculty Member')} &bull; ${window.escapeHtml(this.currentUser.department || '')}</div>
             </div>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item" id="btn-dropdown-history">
@@ -513,6 +638,14 @@ const AuthModule = {
     }
   },
 
+  guestQuotaText() {
+    const q = window.AppState.guestQuota;
+    if (!q) return "Guest access: 1 question paper per device.";
+    return q.remaining > 0
+      ? `Guest access: ${q.remaining} of ${q.limit} free question paper left on this device.`
+      : "Guest access: the free question paper for this device has been used. Create a faculty account for more.";
+  },
+
   updateSyllabusUserBanner() {
     const bannerContainer = document.getElementById("syllabus-user-banner");
     if (!bannerContainer) return;
@@ -526,10 +659,10 @@ const AuthModule = {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-            <span>Authenticated Faculty Session: <strong>${this.currentUser.display_name}</strong> (${this.currentUser.department || 'Academic Department'})</span>
+            <span>${this.currentUser.is_guest ? "Guest session" : "Authenticated Faculty Session"}: <strong>${window.escapeHtml(this.currentUser.display_name)}</strong> (${window.escapeHtml(this.currentUser.department || 'Academic Department')})</span>
           </div>
           <div class="user-welcome-stats">
-            Private and isolated workspace. <span id="banner-history-count">${this.cachedHistory.length} examination paper${this.cachedHistory.length === 1 ? '' : 's'} recorded</span> in your archive.
+            ${this.currentUser.is_guest ? this.guestQuotaText() + " " : "Private and isolated workspace. "}<span id="banner-history-count">${this.cachedHistory.length} examination paper${this.cachedHistory.length === 1 ? '' : 's'} recorded</span> in your archive.
           </div>
         </div>
         <div style="display: flex; gap: 8px;">
@@ -663,16 +796,16 @@ const AuthModule = {
         <div class="history-paper-item" data-paper-id="${p.paper_id}">
           <div class="history-paper-info">
             <div class="history-paper-title">
-              <span class="course-code-pill">${p.course_code || 'EXAM'}</span>
-              <span>${p.exam_title || 'Semester Examination'}</span>
-              <span class="history-paper-subject">&bull; ${p.course_name || 'Curriculum Subject'}</span>
+              <span class="course-code-pill">${window.escapeHtml(p.course_code || 'EXAM')}</span>
+              <span>${window.escapeHtml(p.exam_title || 'Semester Examination')}</span>
+              <span class="history-paper-subject">&bull; ${window.escapeHtml(p.course_name || 'Curriculum Subject')}</span>
             </div>
             <div class="history-paper-meta">
               <span><strong>Marks:</strong> ${p.total_marks || 100}</span>
               <span><strong>Duration:</strong> ${p.duration || '3 Hours'}</span>
               <span><strong>Questions:</strong> ${p.question_count || 10}</span>
               <span><strong>Cognitive Depth:</strong> <span class="cog-metric">${cog}/6.0</span></span>
-              <span><strong>Synthesized:</strong> ${p.created_at || 'Recently'}</span>
+              <span><strong>Synthesized:</strong> ${window.escapeHtml(p.created_at || 'Recently')}</span>
             </div>
           </div>
           <div class="history-paper-actions">
@@ -843,6 +976,7 @@ const AuthModule = {
   },
 
   async resetPassword(username, newPassword) {
+    const recoveryCode = document.getElementById("forgot-recovery-code").value.trim();
     const submitBtn = document.getElementById("btn-submit-forgot");
     const origHtml = submitBtn ? submitBtn.innerHTML : "";
     if (submitBtn) {
@@ -854,7 +988,7 @@ const AuthModule = {
       const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, new_password: newPassword })
+        body: JSON.stringify({ username, new_password: newPassword, recovery_code: recoveryCode })
       });
       const data = await res.json();
 
@@ -865,6 +999,9 @@ const AuthModule = {
           successMsg.style.display = "block";
         }
         window.showToast("Password updated successfully! You can now sign in.", "success");
+        if (data.recovery_code) {
+          this.showRecoveryDialog(data.recovery_code, async () => {});
+        }
         setTimeout(() => {
           const formForgot = document.getElementById("form-faculty-forgot");
           const formLogin = document.getElementById("form-faculty-login");

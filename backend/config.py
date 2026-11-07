@@ -331,6 +331,7 @@ EXAM_TEMPLATES = {
         "name": "R. C. Patel Institute of Technology, Shirpur - End Semester (65 Marks)",
         "duration": "02:00 Hrs.",
         "total_marks": 65,
+        "numbering_style": "sub",
         "college_profile": {
             "society": "Shirpur Education Society's",
             "college": "R. C. PATEL INSTITUTE OF TECHNOLOGY, SHIRPUR",
@@ -469,6 +470,7 @@ EXAM_TEMPLATES = {
         "name": "SVKM D. J. Sanghvi College of Engineering, Mumbai (60 Marks)",
         "duration": "02:00 Hrs.",
         "total_marks": 60,
+        "numbering_style": "sub",
         "college_profile": {
             "society": "SVKM",
             "college": "D. J. Sanghvi College of Engineering",

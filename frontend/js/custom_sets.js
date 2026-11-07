@@ -54,6 +54,9 @@ window.QuestionSetsModule = {
     if (sourceSelect) {
       sourceSelect.addEventListener("change", (e) => {
         window.AppState.generationSource = e.target.value;
+        window.AppState.useUploadedSet = false;
+        if (window.UploadModule) window.UploadModule.refreshActiveBadge();
+        if (window.BlueprintModule) window.BlueprintModule.renderUnitPlanner();
         const note = document.getElementById("generation-source-note");
         if (note) {
           if (e.target.value === "user_sets") {
@@ -141,7 +144,7 @@ window.QuestionSetsModule = {
       btn.className = `btn btn-sm ${s.set_id === this.activeSetId ? "btn-primary" : "btn-secondary"}`;
       btn.style.marginRight = "6px";
       btn.style.marginBottom = "6px";
-      btn.innerHTML = `<span>${s.set_name}</span> <span class="badge" style="background:rgba(255,255,255,0.2); margin-left:4px;">${(s.questions || []).length}</span>`;
+      btn.innerHTML = `<span>${window.escapeHtml(s.set_name)}</span> <span class="badge" style="background:rgba(15,23,42,0.12); margin-left:4px;">${(s.questions || []).length}</span>`;
       btn.addEventListener("click", () => {
         this.activeSetId = s.set_id;
         this.renderSetsTabs();
@@ -185,7 +188,7 @@ window.QuestionSetsModule = {
       const card = document.createElement("div");
       card.className = "question-item";
       card.style.marginBottom = "10px";
-      card.style.background = "rgba(255, 255, 255, 0.03)";
+      card.style.background = "#F8FAFC";
       card.style.border = "1px solid var(--border-subtle)";
       card.style.borderRadius = "var(--radius-sm)";
       card.style.padding = "10px 14px";
@@ -200,9 +203,9 @@ window.QuestionSetsModule = {
             <span class="bloom-badge ${bloomClass}">${bloomLvl}</span>
             <span class="co-badge" style="background:rgba(16,185,129,0.15); color:#34D399; font-weight:700;">${q.co || "CO1"}</span>
             <span class="marks-badge">[${q.marks || 5}M]</span>
-            ${q.topic ? `<span style="font-size:11px; color:var(--text-muted); font-style:italic;">${q.topic}</span>` : ""}
+            ${q.topic ? `<span style="font-size:11px; color:var(--text-muted); font-style:italic;">${window.escapeHtml(q.topic)}</span>` : ""}
           </div>
-          <div style="font-size:13px; color:var(--text-secondary); line-height:1.4;">${q.question_text}</div>
+          <div style="font-size:13px; color:var(--text-secondary); line-height:1.4;">${window.escapeHtml(q.question_text)}</div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
           <button class="btn-icon btn-sm" title="Delete question from set" onclick="window.QuestionSetsModule.deleteQuestion(${qIdx})">
@@ -284,7 +287,7 @@ window.QuestionSetsModule = {
 
   async preloadStarterSets() {
     try {
-      const res = await fetch(`${API_BASE}/api/question-sets`);
+      const res = await fetch(`${API_BASE}/api/question-sets`, { headers: window.authHeaders() });
       const data = await res.json();
       if (data.success && data.sets) {
         window.AppState.userQuestionSets = data.sets;

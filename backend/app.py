@@ -6,9 +6,12 @@ Flask Application & RESTful API Server
 import os
 import io
 import json
+import time
+import uuid
 import logging
-import zipfile
-from flask import Flask, request, jsonify, send_from_directory, Response, send_file
+import threading
+from collections import defaultdict, deque
+from flask import Flask, request, jsonify, send_from_directory, Response
 
 from config import BLOOM_LEVELS, BLOOM_ORDER, BLOOM_PRESETS, EXAM_TEMPLATES
 from core.bloom_engine import (
@@ -23,65 +26,56 @@ from core.question_generator import generate_paper_from_blueprint, generate_sing
 from core.figure_generator import generate_technical_diagram
 from core.export_service import generate_word_document, generate_word_docx
 
+from core.paper_structure import (
+    apply_unit_plan,
+    apply_or_configuration,
+    apply_numbering,
+    summarize_units,
+)
+from core.question_set_parser import parse_question_set
+from core.template_extractor import extract_template, SUPPORTED_EXT as TEMPLATE_EXT
+from core.template_schema import sanitize_template, paper_style_payload
+from core.database import DatabaseNotConfigured
+from core.academic_year import normalize_ay, apply_academic_year_to_config, apply_academic_year_to_style
+from core.figure_planner import attach_figures
 from core.auth_history_service import (
+    init_service,
     authenticate_user,
     register_user,
     reset_user_password,
-    list_users,
     create_session,
+    create_guest_session,
+    get_guest_quota,
+    reserve_guest_paper,
+    release_guest_paper,
     get_user_by_token,
     destroy_session,
     save_paper_to_history,
     get_user_history,
     get_history_paper,
-    delete_history_paper
+    delete_history_paper,
+    load_question_sets,
+    save_question_sets,
+    load_custom_templates,
+    save_custom_template_db,
+    delete_custom_template_db,
 )
 
 # Set up paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-CUSTOM_TEMPLATES_FILE = os.path.join(DATA_DIR, "custom_templates.json")
 
-def load_all_templates():
+def load_all_templates(user_id=None):
+    """Built-in templates plus the signed-in user's own college templates."""
     templates = dict(EXAM_TEMPLATES)
-    if os.path.exists(CUSTOM_TEMPLATES_FILE):
-        try:
-            with open(CUSTOM_TEMPLATES_FILE, "r", encoding="utf-8") as f:
-                custom = json.load(f)
-                templates.update(custom)
-        except Exception as e:
-            logger.warning(f"Could not load custom templates: {e}")
+    try:
+        if user_id:
+            templates.update(load_custom_templates(user_id))
+    except Exception as e:
+        logger.warning(f"Could not load custom templates: {e}")
     return templates
 
-def save_custom_template(template_id: str, template_data: dict):
-    custom = {}
-    if os.path.exists(CUSTOM_TEMPLATES_FILE):
-        try:
-            with open(CUSTOM_TEMPLATES_FILE, "r", encoding="utf-8") as f:
-                custom = json.load(f)
-        except Exception:
-            custom = {}
-    custom[template_id] = template_data
-    os.makedirs(os.path.dirname(CUSTOM_TEMPLATES_FILE), exist_ok=True)
-    with open(CUSTOM_TEMPLATES_FILE, "w", encoding="utf-8") as f:
-        json.dump(custom, f, indent=2)
-
-def delete_custom_template(template_id: str):
-    if os.path.exists(CUSTOM_TEMPLATES_FILE):
-        try:
-            with open(CUSTOM_TEMPLATES_FILE, "r", encoding="utf-8") as f:
-                custom = json.load(f)
-            if template_id in custom:
-                del custom[template_id]
-                with open(CUSTOM_TEMPLATES_FILE, "w", encoding="utf-8") as f:
-                    json.dump(custom, f, indent=2)
-                return True
-        except Exception:
-            pass
-    return False
-
-QUESTION_SETS_FILE = os.path.join(DATA_DIR, "user_question_sets.json")
 
 def get_default_starter_sets():
     """Default starter sets modeled directly on the attached college question papers."""
@@ -240,40 +234,103 @@ def get_default_starter_sets():
         }
     ]
 
-def load_user_question_sets(user_id: str = "default"):
-    if os.path.exists(QUESTION_SETS_FILE):
-        try:
-            with open(QUESTION_SETS_FILE, "r", encoding="utf-8") as f:
-                all_sets = json.load(f)
-                if user_id in all_sets and all_sets[user_id]:
-                    return all_sets[user_id]
-                if "default" in all_sets and all_sets["default"]:
-                    return all_sets["default"]
-        except Exception as e:
-            logger.warning(f"Error reading question sets file: {e}")
-    # Return starter sets
+def load_user_question_sets(user_id: str):
+    sets = load_question_sets(user_id)
+    if sets:
+        return sets
     default_sets = get_default_starter_sets()
-    save_user_question_sets(user_id, default_sets)
+    save_question_sets(user_id, default_sets)
     return default_sets
 
 def save_user_question_sets(user_id: str, sets_data: list):
-    all_sets = {}
-    if os.path.exists(QUESTION_SETS_FILE):
-        try:
-            with open(QUESTION_SETS_FILE, "r", encoding="utf-8") as f:
-                all_sets = json.load(f)
-        except Exception:
-            all_sets = {}
-    key = user_id or "default"
-    all_sets[key] = sets_data
-    os.makedirs(os.path.dirname(QUESTION_SETS_FILE), exist_ok=True)
-    with open(QUESTION_SETS_FILE, "w", encoding="utf-8") as f:
-        json.dump(all_sets, f, indent=2)
+    save_question_sets(user_id, sets_data)
 
 app = Flask(__name__, static_folder=FRONTEND_DIR)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("BloomApp")
+
+
+if os.environ.get("TRUST_PROXY") == "1":
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
+
+_db_ready = False
+_db_lock = threading.Lock()
+
+
+def ensure_database():
+    """Create tables on first use. Raises DatabaseNotConfigured when DATABASE_URL is missing."""
+    global _db_ready
+    if _db_ready:
+        return
+    with _db_lock:
+        if not _db_ready:
+            init_service()
+            _db_ready = True
+
+
+DB_BACKED_PREFIXES = ("/api/auth", "/api/history", "/api/question-sets", "/api/paper", "/api/diagram",
+                      "/api/blueprint/templates", "/api/templates")
+
+
+@app.before_request
+def _bootstrap_database():
+    if request.method != "OPTIONS" and request.path.startswith(DB_BACKED_PREFIXES):
+        try:
+            ensure_database()
+        except DatabaseNotConfigured as e:
+            return jsonify({"success": False, "error": str(e)}), 503
+        except Exception as e:
+            logger.error(f"Database unavailable: {e}")
+            return jsonify({"success": False, "error": "Database is unavailable. Please try again shortly."}), 503
+
+
+# Simple per-IP throttle for credential endpoints (the DB also locks accounts after repeated failures)
+_rate = defaultdict(deque)
+_rate_lock = threading.Lock()
+
+
+def too_many_requests(bucket: str, limit: int = 30, window: int = 600) -> bool:
+    key = f"{bucket}:{request.remote_addr}"
+    now = time.time()
+    with _rate_lock:
+        q = _rate[key]
+        while q and now - q[0] > window:
+            q.popleft()
+        if len(q) >= limit:
+            return True
+        q.append(now)
+    return False
+
+
+def _optional_user_id():
+    """User id when a valid session token is sent, otherwise None (public endpoints)."""
+    try:
+        u = get_user_by_token(get_auth_token())
+        return u["user_id"] if u else None
+    except Exception:
+        return None
+
+
+def get_auth_token():
+    return request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
+
+
+def require_user():
+    user = get_user_by_token(get_auth_token())
+    if not user:
+        return None, (jsonify({"success": False, "error": "Please sign in to continue."}), 401)
+    return user, None
+
+
+def collect_device_ids(body=None):
+    ids = [request.headers.get("X-Device-Id"), request.cookies.get("bc_device")]
+    if isinstance(body, dict):
+        ids.append(body.get("device_id"))
+    return [i for i in ids if i]
 
 
 # Enable Comprehensive CORS
@@ -283,14 +340,14 @@ def handle_options_preflight():
         res = Response()
         res.headers["Access-Control-Allow-Origin"] = "*"
         res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        res.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-User-Id, X-Auth-Token"
+        res.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-User-Id, X-Auth-Token, X-Device-Id"
         return res
 
 @app.after_request
 def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-User-Id, X-Auth-Token"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-User-Id, X-Auth-Token, X-Device-Id"
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -387,7 +444,7 @@ def get_presets():
         "bloom_levels": BLOOM_LEVELS,
         "bloom_order": BLOOM_ORDER,
         "cognitive_presets": BLOOM_PRESETS,
-        "exam_templates": load_all_templates()
+        "exam_templates": load_all_templates(_optional_user_id())
     })
 
 
@@ -410,7 +467,7 @@ def generate_paper():
 
         # Resolve template metadata and college profile if template_id is specified
         template_id = exam_config.get("template_id") or data.get("template_id")
-        all_templates = load_all_templates()
+        all_templates = load_all_templates(_optional_user_id())
         if template_id and template_id in all_templates:
             tmpl = all_templates[template_id]
             if "sections" in tmpl and not exam_config.get("sections"):
@@ -426,43 +483,95 @@ def generate_paper():
             if "name" in tmpl and not exam_config.get("exam_title"):
                 exam_config["exam_title"] = tmpl.get("college_profile", {}).get("exam_title", tmpl["name"])
         
-        # Resolve authenticated user from Bearer token for strict security & isolation
-        auth_header = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-        auth_user = get_user_by_token(auth_header)
+        # One Academic Year for the whole paper: stamp it on the college header and exam title
+        academic_year = normalize_ay(data.get("academic_year") or exam_config.get("academic_year"))
+        year_semester = normalize_ay(data.get("year_semester") or exam_config.get("year_semester"))
+        if academic_year or year_semester:
+            exam_config = apply_academic_year_to_config(exam_config, academic_year, year_semester)
+
+        # Resolve authenticated user from the session token
+        auth_user = get_user_by_token(get_auth_token())
         if not auth_user:
             return jsonify({"success": False, "error": "Please sign in to generate question papers."}), 401
         user_id = auth_user["user_id"]
         user_seed = auth_user["user_id"]
-        
-        # Normalize distribution if needed
-        normalized_dist = normalize_distribution(target_distribution)
 
-        # Build execution blueprint with user divergence
-        blueprint = build_blueprint(syllabus, exam_config, normalized_dist, user_seed=user_seed)
+        # Guests may generate exactly one paper per device
+        is_guest = bool(auth_user.get("is_guest"))
+        if is_guest and not reserve_guest_paper(user_id):
+            return jsonify({
+                "success": False,
+                "guest_limit_reached": True,
+                "error": "Guest access allows only 1 question paper per device. Create a free faculty account to generate more."
+            }), 403
 
-        # Generate questions from AICTE engine or user question sets
-        api_config = data.get("api_config", {})
-        paper = generate_paper_from_blueprint(
-            blueprint, 
-            api_config=api_config, 
-            user_seed=user_seed, 
-            user_sets=user_sets,
-            diagram_mode=data.get("diagram_mode", "auto")
-        )
+        try:
+            # Normalize distribution if needed
+            normalized_dist = normalize_distribution(target_distribution)
 
-        # Calculate actual cognitive distribution and depth metrics
-        actual_stats = calculate_actual_distribution(paper["all_questions"])
-        cognitive_index = calculate_cognitive_index(actual_stats)
+            # Build execution blueprint with user divergence (generation logic unchanged)
+            blueprint = build_blueprint(syllabus, exam_config, normalized_dist, user_seed=user_seed)
 
-        paper["analytics"] = {
-            "target_distribution": normalized_dist,
-            "actual_distribution": actual_stats,
-            "cognitive_index": cognitive_index,
-            "co_summary": paper.get("co_summary", {}),
-            "source_mode": paper.get("source_mode", "AICTE-Pedagogical-Engine")
-        }
+            # Optional layers: unit weightage / unit Bloom levels, manual OR questions, Q.1 (a)(b)(c) labels
+            sections_cfg = exam_config.get("sections", [])
+            unit_plan = data.get("unit_plan") or exam_config.get("unit_plan")
+            blueprint = apply_unit_plan(blueprint, syllabus, unit_plan, sections_cfg)
+            blueprint = apply_or_configuration(blueprint, sections_cfg, syllabus)
+            numbering_style = exam_config.get("numbering_style") or data.get("numbering_style")
+            if not numbering_style and template_id in all_templates:
+                numbering_style = all_templates[template_id].get("numbering_style")
+            numbering_fmt = None
+            style_payload = None
+            if template_id in all_templates:
+                numbering_fmt = all_templates[template_id].get("numbering_format")
+                style_payload = paper_style_payload(all_templates[template_id])
+            blueprint = apply_numbering(blueprint, numbering_style, numbering_fmt)
+
+            # Generate questions from AICTE engine or user question sets
+            api_config = data.get("api_config", {})
+            paper = generate_paper_from_blueprint(
+                blueprint,
+                api_config=api_config,
+                user_seed=user_seed,
+                user_sets=user_sets,
+                diagram_mode=data.get("diagram_mode", "auto")
+            )
+
+            # Calculate actual cognitive distribution and depth metrics
+            actual_stats = calculate_actual_distribution(paper["all_questions"])
+            cognitive_index = calculate_cognitive_index(actual_stats)
+
+            paper["analytics"] = {
+                "target_distribution": normalized_dist,
+                "actual_distribution": actual_stats,
+                "cognitive_index": cognitive_index,
+                "co_summary": paper.get("co_summary", {}),
+                "source_mode": paper.get("source_mode", "AICTE-Pedagogical-Engine")
+            }
+            paper["numbering_style"] = blueprint.get("numbering_style", "sequential")
+            if style_payload:
+                if academic_year or year_semester:
+                    style_payload = apply_academic_year_to_style(style_payload, academic_year, year_semester)
+                paper["template_style"] = style_payload     # header lines, logos, meta rows, fonts of the college
+            paper["unit_summary"] = summarize_units(paper, syllabus, unit_plan)
+            primary_marks = sum(q.get("marks", 0) for q in paper["all_questions"] if not q.get("is_choice"))
+            paper["marks_check"] = {
+                "expected": paper.get("total_marks"),
+                "actual": primary_marks,
+                "matches": primary_marks == paper.get("total_marks"),
+            }
+        except Exception:
+            if is_guest:
+                release_guest_paper(user_id)      # a server error must not burn the guest's only paper
+            raise
 
         custom_layout = data.get("custom_layout", {})
+        if academic_year or year_semester:
+            custom_layout = dict(custom_layout or {})
+            custom_layout["academic_session"] = " | ".join(
+                p for p in (year_semester, f"Academic Year {academic_year}" if academic_year else "") if p)
+            paper["academic_year"] = academic_year
+            paper["year_semester"] = year_semester
         paper["custom_layout"] = custom_layout
 
         # Persist to user history if user_id is provided
@@ -470,7 +579,10 @@ def generate_paper():
             paper_id = save_paper_to_history(user_id, paper)
             paper["paper_id"] = paper_id
 
-        return jsonify({"success": True, "paper": paper})
+        payload = {"success": True, "paper": paper}
+        if is_guest:
+            payload["guest_quota"] = get_guest_quota(user_id)
+        return jsonify(payload)
 
     except Exception as e:
         logger.error(f"Error generating paper: {e}", exc_info=True)
@@ -482,14 +594,12 @@ def generate_paper():
 # =========================================================================
 @app.route("/api/question-sets", methods=["GET"])
 def get_question_sets():
-    """Retrieve custom question sets for authenticated faculty member."""
+    """Retrieve custom question sets for the signed-in faculty member."""
     try:
-        auth_header = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-        auth_user = get_user_by_token(auth_header)
-        user_id = auth_user["user_id"] if auth_user else (request.args.get("user_id") or "default")
-
-        sets = load_user_question_sets(user_id)
-        return jsonify({"success": True, "sets": sets})
+        user, err = require_user()
+        if err:
+            return err
+        return jsonify({"success": True, "sets": load_user_question_sets(user["user_id"])})
     except Exception as e:
         logger.error(f"Error retrieving question sets: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
@@ -497,116 +607,168 @@ def get_question_sets():
 
 @app.route("/api/question-sets", methods=["POST"])
 def save_question_sets_endpoint():
-    """Save or update custom question sets (e.g. Set 1, Set 2, Set 3, Set 4)."""
+    """Save or update custom question sets."""
     try:
+        user, err = require_user()
+        if err:
+            return err
         data = request.get_json() or {}
         sets_data = data.get("sets", [])
         if not isinstance(sets_data, list):
             return jsonify({"success": False, "error": "Question sets must be a list of sets."}), 400
-
-        auth_header = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-        auth_user = get_user_by_token(auth_header)
-        user_id = auth_user["user_id"] if auth_user else (data.get("user_id") or "default")
-
-        save_user_question_sets(user_id, sets_data)
+        save_user_question_sets(user["user_id"], sets_data)
         return jsonify({"success": True, "sets": sets_data, "message": "Question sets updated successfully."})
     except Exception as e:
         logger.error(f"Error saving question sets: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+ALLOWED_QSET_EXT = (".pdf", ".docx", ".txt", ".md", ".csv", ".json")
+
+
+@app.route("/api/question-sets/upload", methods=["POST"])
+def upload_question_set():
+    """
+    Parse an uploaded question set and derive Unit names, Course Outcomes and Program Outcomes from it.
+    Nothing is stored; the browser keeps the result and sends it back when generating the paper.
+    """
+    try:
+        user, err = require_user()
+        if err:
+            return err
+        if "file" not in request.files:
+            return jsonify({"success": False, "error": "Please choose a question set file to upload."}), 400
+        f = request.files["file"]
+        name = (f.filename or "").strip()
+        if not name.lower().endswith(ALLOWED_QSET_EXT):
+            return jsonify({"success": False, "error": "Unsupported file type. Upload PDF, DOCX, TXT, MD, CSV or JSON."}), 400
+        data = f.read()
+        if not data:
+            return jsonify({"success": False, "error": "The uploaded file is empty."}), 400
+        result = parse_question_set(
+            name, data,
+            course_code=request.form.get("course_code", "CS501"),
+            course_name=request.form.get("course_name", ""),
+        )
+        return jsonify({"success": True, **result})
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        logger.error(f"Error parsing question set: {e}", exc_info=True)
+        return jsonify({"success": False, "error": "Could not read that file. Please check it and try again."}), 500
+
+
 # =========================================================================
 # USER AUTHENTICATION ENDPOINTS (WITH STRICT SESSION SECURITY)
 # =========================================================================
+def _with_device_cookie(resp, device_ids):
+    """Remember the device id in a long-lived HttpOnly cookie (second identifier next to localStorage)."""
+    if device_ids and not request.cookies.get("bc_device"):
+        resp.set_cookie("bc_device", device_ids[0], max_age=10 * 365 * 24 * 3600,
+                        httponly=True, samesite="Lax", secure=request.is_secure)
+    return resp
+
+
 @app.route("/api/auth/login", methods=["POST"])
 def auth_login():
-    """Authenticate user with username and password, returning an isolated session token."""
+    """Authenticate faculty with username + password and return a long-lived session token."""
     try:
+        if too_many_requests("login"):
+            return jsonify({"success": False, "error": "Too many attempts. Please wait a few minutes."}), 429
         data = request.get_json() or {}
         username = (data.get("username") or "").strip()
         password = data.get("password") or ""
         if not username:
-            return jsonify({"success": False, "error": "Faculty username or ID is required."}), 400
+            return jsonify({"success": False, "error": "Username is required."}), 400
         if not password:
             return jsonify({"success": False, "error": "Password is required."}), 400
 
-        user = authenticate_user(username, password)
+        user, lock_msg = authenticate_user(username, password)
+        if lock_msg:
+            return jsonify({"success": False, "error": lock_msg}), 429
         if not user:
-            return jsonify({"success": False, "error": "Incorrect username or password. Please verify your credentials."}), 401
+            return jsonify({"success": False, "error": "Incorrect username or password."}), 401
 
-        token = create_session(user["user_id"])
+        token = create_session(user["user_id"], request.headers.get("User-Agent", ""))
         return jsonify({"success": True, "user": user, "token": token})
     except Exception as e:
         logger.error(f"Error during login: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": "Sign in failed. Please try again."}), 500
 
 
 @app.route("/api/auth/register", methods=["POST"])
 def auth_register():
-    """Register a new faculty user profile and issue an isolated session token."""
+    """Register a faculty account. The response carries a one-time recovery code."""
     try:
+        if too_many_requests("register", limit=15):
+            return jsonify({"success": False, "error": "Too many attempts. Please wait a few minutes."}), 429
         data = request.get_json() or {}
-        username = data.get("username", "")
-        display_name = data.get("display_name", "")
-        department = data.get("department", "")
-        password = data.get("password", "")
-
-        if not username:
-            return jsonify({"success": False, "error": "Username is required."}), 400
-        if len(password) < 6:
-            return jsonify({"success": False, "error": "Password must be at least 6 characters long."}), 400
-
-        user = register_user(username, display_name, department, password)
-        token = create_session(user["user_id"])
-        return jsonify({"success": True, "user": user, "token": token})
+        user = register_user(
+            data.get("username", ""), data.get("display_name", ""),
+            data.get("department", ""), data.get("password", ""),
+        )
+        recovery_code = user.pop("recovery_code")
+        token = create_session(user["user_id"], request.headers.get("User-Agent", ""))
+        return jsonify({"success": True, "user": user, "token": token, "recovery_code": recovery_code})
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        logger.error(f"Error during registration: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error during registration: {e}", exc_info=True)
+        return jsonify({"success": False, "error": "Registration failed. Please try again."}), 500
+
+
+@app.route("/api/auth/guest", methods=["POST"])
+def auth_guest():
+    """Continue as guest: one generated paper per device."""
+    try:
+        if too_many_requests("guest", limit=30):
+            return jsonify({"success": False, "error": "Too many attempts. Please wait a few minutes."}), 429
+        body = request.get_json(silent=True) or {}
+        device_ids = collect_device_ids(body)
+        user, token, quota = create_guest_session(device_ids, request.headers.get("User-Agent", ""))
+        if not user:
+            return jsonify({"success": False, "error": quota.get("error", "Guest sign-in failed.")}), 400
+        resp = jsonify({"success": True, "user": user, "token": token, "guest_quota": quota})
+        return _with_device_cookie(resp, device_ids)
+    except Exception as e:
+        logger.error(f"Error during guest sign-in: {e}", exc_info=True)
+        return jsonify({"success": False, "error": "Guest sign-in failed. Please try again."}), 500
 
 
 @app.route("/api/auth/forgot-password", methods=["POST"])
 @app.route("/api/auth/reset-password", methods=["POST"])
 def auth_forgot_password():
-    """Reset faculty password by username."""
+    """Reset a faculty password using the recovery code issued at registration."""
     try:
+        if too_many_requests("reset", limit=10):
+            return jsonify({"success": False, "error": "Too many attempts. Please wait a few minutes."}), 429
         data = request.get_json() or {}
-        username = data.get("username", "").strip()
-        new_password = data.get("new_password", "").strip()
-        if not username:
-            return jsonify({"success": False, "error": "Faculty username or ID is required."}), 400
-        if not new_password or len(new_password) < 6:
-            return jsonify({"success": False, "error": "New password must be at least 6 characters long."}), 400
-
-        ok = reset_user_password(username, new_password)
+        ok, msg, new_code = reset_user_password(
+            data.get("username", ""), data.get("new_password", ""), data.get("recovery_code", ""))
         if ok:
-            return jsonify({
-                "success": True,
-                "message": f"Password for {username} reset successfully. You can now sign in with your new password."
-            })
-        return jsonify({"success": False, "error": "No teacher account found with that username."}), 400
+            return jsonify({"success": True, "message": msg, "recovery_code": new_code})
+        return jsonify({"success": False, "error": msg}), 400
     except Exception as e:
         logger.error(f"Error resetting password: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": "Password reset failed. Please try again."}), 500
 
 
 @app.route("/api/auth/logout", methods=["POST"])
 def auth_logout():
-    """Destroy session token on logout."""
-    token = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-    destroy_session(token)
+    destroy_session(get_auth_token())
     return jsonify({"success": True})
 
 
 @app.route("/api/auth/me", methods=["GET"])
 def auth_me():
-    """Verify session token and return the currently authenticated faculty profile."""
-    token = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-    user = get_user_by_token(token)
+    """Verify the session token and return the signed-in profile (plus guest quota)."""
+    user = get_user_by_token(get_auth_token())
     if not user:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
-    return jsonify({"success": True, "user": user})
+    payload = {"success": True, "user": user}
+    if user.get("is_guest"):
+        payload["guest_quota"] = get_guest_quota(user["user_id"])
+    return jsonify(payload)
 
 
 # =========================================================================
@@ -616,8 +778,7 @@ def auth_me():
 def get_history():
     """Retrieve history of question papers strictly for current authenticated user."""
     try:
-        token = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-        user = get_user_by_token(token)
+        user = get_user_by_token(get_auth_token())
         if not user:
             return jsonify({"success": False, "error": "Please sign in to view your question papers."}), 401
         user_id = user["user_id"]
@@ -633,8 +794,7 @@ def get_history():
 def get_history_single(paper_id):
     """Retrieve complete question paper data strictly from current user's archive."""
     try:
-        token = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-        user = get_user_by_token(token)
+        user = get_user_by_token(get_auth_token())
         if not user:
             return jsonify({"success": False, "error": "Please sign in to view your question papers."}), 401
         user_id = user["user_id"]
@@ -653,8 +813,7 @@ def get_history_single(paper_id):
 def delete_history_single(paper_id):
     """Delete a past paper strictly from current user's archive."""
     try:
-        token = request.headers.get("Authorization") or request.headers.get("X-Auth-Token")
-        user = get_user_by_token(token)
+        user = get_user_by_token(get_auth_token())
         if not user:
             return jsonify({"success": False, "error": "Please sign in to view your question papers."}), 401
         user_id = user["user_id"]
@@ -671,42 +830,86 @@ def delete_history_single(paper_id):
 # =========================================================================
 @app.route("/api/templates", methods=["GET"])
 def get_templates():
-    """Retrieve all available templates (built-in + custom)."""
+    """Built-in templates plus the signed-in faculty member's own college templates."""
     try:
-        return jsonify({"success": True, "templates": load_all_templates()})
+        return jsonify({"success": True, "templates": load_all_templates(_optional_user_id())})
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/api/templates/import", methods=["POST"])
+def import_template_from_paper():
+    """
+    Upload an old question paper (PDF / DOCX / photo) and get back the college template found in it:
+    header lines with their styles, logo(s), meta rows, instructions, sections, numbering style.
+    Nothing is saved until the faculty member reviews it and presses Save.
+    """
+    try:
+        user, err = require_user()
+        if err:
+            return err
+        if user.get("is_guest"):
+            return jsonify({"success": False, "error": "Create a faculty account to add your college template."}), 403
+        if too_many_requests("tmpl_import", limit=20):
+            return jsonify({"success": False, "error": "Too many uploads. Please wait a few minutes."}), 429
+        f = request.files.get("file")
+        if not f or not (f.filename or "").strip():
+            return jsonify({"success": False, "error": "Please choose an old question paper to upload."}), 400
+        name = f.filename.strip()
+        if not name.lower().endswith(TEMPLATE_EXT):
+            return jsonify({"success": False, "error": "Unsupported file. Upload a PDF, Word (.docx) file, or a photo/scan (PNG, JPG)."}), 400
+        data = f.read()
+        if not data:
+            return jsonify({"success": False, "error": "The uploaded file is empty."}), 400
+        result = extract_template(name, data)
+        return jsonify({"success": True, **result})
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        logger.error(f"Template import failed: {e}", exc_info=True)
+        return jsonify({"success": False, "error": "Could not read that file. Try the Word version or a clearer PDF."}), 500
+
+
 @app.route("/api/templates", methods=["POST"])
 def save_template_endpoint():
-    """Create or update a custom exam template."""
+    """Create or update one of the signed-in faculty member's college templates."""
     try:
+        user, err = require_user()
+        if err:
+            return err
+        if user.get("is_guest"):
+            return jsonify({"success": False, "error": "Create a faculty account to save custom templates."}), 403
         data = request.get_json() or {}
-        template_id = data.get("id")
-        template_data = data.get("template")
+        raw = data.get("template")
+        if not isinstance(raw, dict):
+            return jsonify({"success": False, "error": "Template data is required."}), 400
 
-        if not template_id or not template_data:
-            return jsonify({"success": False, "error": "Template ID and template data are required."}), 400
-
-        # Mark as custom
-        template_data["is_custom"] = True
-        save_custom_template(template_id, template_data)
-        return jsonify({"success": True, "template_id": template_id, "template": template_data})
+        template_id = (data.get("id") or "").strip()
+        if template_id in EXAM_TEMPLATES or not template_id.startswith("custom_"):
+            template_id = ""                                   # never overwrite built-ins; mint a fresh id
+        clean = sanitize_template(raw, template_id or None)
+        if not save_custom_template_db(clean["id"], clean, user["user_id"]):
+            clean = sanitize_template(raw, None)               # id belongs to someone else: save as a new template
+            save_custom_template_db(clean["id"], clean, user["user_id"])
+        return jsonify({"success": True, "template_id": clean["id"], "template": clean})
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
     except Exception as e:
-        logger.error(f"Error saving custom template: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error saving custom template: {e}", exc_info=True)
+        return jsonify({"success": False, "error": "Could not save the template."}), 500
 
 
 @app.route("/api/templates/<template_id>", methods=["DELETE"])
 def delete_template_endpoint(template_id):
-    """Delete a custom exam template."""
+    """Delete one of your own custom templates."""
     try:
+        user, err = require_user()
+        if err:
+            return err
         if template_id in EXAM_TEMPLATES:
             return jsonify({"success": False, "error": "Built-in standard templates cannot be deleted."}), 400
-
-        deleted = delete_custom_template(template_id)
+        deleted = delete_custom_template_db(template_id, user["user_id"])
         return jsonify({"success": True, "deleted": deleted})
     except Exception as e:
         logger.error(f"Error deleting template: {e}")
@@ -839,47 +1042,15 @@ def upload_marking_scheme():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-@app.route("/api/download-zip", methods=["GET"])
-def download_project_zip():
-    """
-    Dynamically packages the complete project into a clean zip archive and streams it.
-    Excludes venv, __pycache__, .git, and temporary files.
-    """
-    try:
-        memory_file = io.BytesIO()
-        exclude_dirs = {"venv", ".venv", "__pycache__", ".git", ".idea", ".vscode", "node_modules"}
-        exclude_exts = {".pyc", ".pyo", ".pyd"}
-
-        with zipfile.ZipFile(memory_file, "w", zipfile.ZIP_DEFLATED) as zf:
-            for root, dirs, files in os.walk(BASE_DIR):
-                dirs[:] = [d for d in dirs if d not in exclude_dirs and not d.startswith(".")]
-
-                for file in files:
-                    if any(file.endswith(ext) for ext in exclude_exts) or file.endswith(".zip"):
-                        continue
-
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, BASE_DIR)
-                    zf.write(file_path, arcname)
-
-        memory_file.seek(0)
-        return send_file(
-            memory_file,
-            mimetype="application/zip",
-            as_attachment=True,
-            download_name="bloomcraft_ai_project.zip"
-        )
-    except Exception as e:
-        logger.error(f"Error packaging zip: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
 @app.route("/api/paper/regenerate-question", methods=["POST"])
 def regenerate_question():
     """
     Regenerates a single question slot with a fresh alternative.
     """
     try:
+        _u, _err = require_user()
+        if _err:
+            return _err
         data = request.get_json() or {}
         slot = data.get("slot")
         if not slot:
@@ -888,12 +1059,20 @@ def regenerate_question():
         api_config = data.get("api_config", {})
         exclude_texts = data.get("exclude_texts", [])
 
-        fresh_question = generate_single_question(
-            slot,
-            api_config=api_config,
-            exclude_texts=exclude_texts,
-            diagram_mode=data.get("diagram_mode", "auto")
-        )
+        # Try a few times so the "new" question really differs from the wording being replaced
+        seen = {str(t).strip().lower() for t in exclude_texts if t}
+        fresh_question = None
+        for _attempt in range(4):
+            fresh_question = generate_single_question(
+                slot,
+                api_config=api_config,
+                exclude_texts=exclude_texts,
+                with_figure=False
+            )
+            if str(fresh_question.get("question_text", "")).strip().lower() not in seen:
+                break
+        # figure planning (may call the LLM) only once, for the question we keep
+        attach_figures([fresh_question], api_config, data.get("diagram_mode", "auto"))
 
         return jsonify({"success": True, "question": fresh_question})
 
@@ -921,6 +1100,9 @@ def generate_diagram_endpoint():
     Supports runtime AI diagram design (free-tier Groq/OpenRouter/Cerebras/Mistral) with an offline fallback.
     """
     try:
+        _u, _err = require_user()
+        if _err:
+            return _err
         data = request.get_json() or {}
         topic = data.get("topic", "Engineering Concept")
         question_text = data.get("question_text", "")
@@ -982,6 +1164,9 @@ def export_doc():
     Exports the question paper as a Word (.docx) file with diagrams embedded.
     """
     try:
+        _u, _err = require_user()
+        if _err:
+            return _err
         data = request.get_json() or {}
         paper_data = data.get("paper")
         if not paper_data:
@@ -1002,9 +1187,13 @@ def export_doc():
 
 
 if __name__ == "__main__":
+    try:
+        ensure_database()
+    except DatabaseNotConfigured as e:
+        raise SystemExit(f"\nERROR: {e}\n")
     port = int(os.environ.get("PORT", 5000))
     print(f"\n=======================================================")
     print(f"  BloomCraft - Bloom's Taxonomy Question Paper Generator")
     print(f"  Server running on http://127.0.0.1:{port}")
     print(f"=======================================================\n")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=os.environ.get("FLASK_DEBUG") == "1")

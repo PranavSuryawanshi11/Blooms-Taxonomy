@@ -47,6 +47,7 @@ window.BlueprintModule = {
       totalMarksInput.addEventListener("input", (e) => {
         window.AppState.currentBlueprintConfig.total_marks = parseInt(e.target.value) || 100;
         this.updateTotalMarksIndicator();
+        this.renderUnitPlanner();
       });
     }
 
@@ -63,6 +64,39 @@ window.BlueprintModule = {
     if (examTitleInput) {
       examTitleInput.addEventListener("input", (e) => {
         window.AppState.currentBlueprintConfig.exam_title = e.target.value;
+      });
+    }
+
+    // Numbering style (Q1, Q2 ... vs Q.1 (a), (b), (c))
+    const numSel = document.getElementById("select-numbering-style");
+    if (numSel) {
+      numSel.value = window.AppState.numberingStyle || "sequential";
+      numSel.addEventListener("change", (e) => {
+        window.AppState.numberingStyle = e.target.value;
+        this.renderSectionsList();
+      });
+    }
+
+    // Unit planner controls
+    const upEnable = document.getElementById("unit-plan-enable");
+    if (upEnable) {
+      upEnable.addEventListener("change", () => {
+        window.AppState.unitPlan.enabled = upEnable.checked;
+        this.renderUnitPlanner();
+      });
+    }
+    const upEven = document.getElementById("btn-unit-plan-even");
+    if (upEven) {
+      upEven.addEventListener("click", () => {
+        window.AppState.unitPlanAuto = true;
+        this.renderUnitPlanner(true);
+      });
+    }
+    const upClear = document.getElementById("btn-unit-plan-clear-levels");
+    if (upClear) {
+      upClear.addEventListener("click", () => {
+        (window.AppState.unitPlan.units || []).forEach(u => { u.levels = []; });
+        this.renderUnitPlanner();
       });
     }
 
@@ -93,6 +127,8 @@ window.BlueprintModule = {
     this.renderSectionsList();
     this.updateTotalMarksIndicator();
     this.updateDistributionVisualizer();
+    this.renderUnitPlanner();
+    if (window.UploadModule && window.UploadModule.renderResult) window.UploadModule.refreshActiveBadge();
   },
 
   onTemplateSelect(templateId) {
@@ -113,7 +149,13 @@ window.BlueprintModule = {
       window.AppState.currentBlueprintConfig.duration = tmpl.duration;
       window.AppState.currentBlueprintConfig.exam_title = tmpl.name;
       window.AppState.currentBlueprintConfig.instructions = tmpl.instructions || [];
-      window.AppState.currentBlueprintConfig.sections = JSON.parse(JSON.stringify(tmpl.sections));
+      window.AppState.currentBlueprintConfig.sections = window.normalizeSections(JSON.parse(JSON.stringify(tmpl.sections)));
+      window.AppState.numberingStyle = tmpl.numbering_style || "sequential";
+      window.AppState.numberingFormat = tmpl.numbering_format || null;
+      if (window.TemplateImport) window.TemplateImport.updateDeleteButton();
+      const numSel = document.getElementById("select-numbering-style");
+      if (numSel) numSel.value = window.AppState.numberingStyle;
+      window.AppState.unitPlanAuto = true;
 
       // Also sync custom layout defaults
       window.AppState.customLayout.exam_title = tmpl.name;
@@ -163,7 +205,8 @@ window.BlueprintModule = {
       const data = await res.json();
       if (data.success && data.marking_scheme) {
         const scheme = data.marking_scheme;
-        window.AppState.currentBlueprintConfig.sections = scheme.sections;
+        window.AppState.currentBlueprintConfig.sections = window.normalizeSections(scheme.sections);
+        window.AppState.unitPlanAuto = true;
         window.AppState.currentBlueprintConfig.total_marks = scheme.total_marks;
         window.AppState.currentBlueprintConfig.duration = scheme.duration;
         window.AppState.currentBlueprintConfig.exam_title = scheme.exam_title;
@@ -204,6 +247,7 @@ window.BlueprintModule = {
       allowed_levels: ["L3", "L4"],
       has_internal_choice: true
     };
+    window.normalizeSections([newSec]);
 
     sections.push(newSec);
     this.renderSectionsList();
@@ -224,103 +268,157 @@ window.BlueprintModule = {
     showToast("Section removed.", "info");
   },
 
+  sectionTotal(sec) {
+    return (sec.question_marks || []).reduce((a, b) => a + Number(b || 0), 0);
+  },
+
+  questionLabel(secIdx, qIdx) {
+    const fmt = window.AppState.numberingFormat;
+    if (window.AppState.numberingStyle === "sub") {
+      return window.formatQuestionLabel(fmt, secIdx + 1, String.fromCharCode(97 + (qIdx % 26)));
+    }
+    let n = 0;
+    const secs = window.AppState.currentBlueprintConfig.sections || [];
+    for (let i = 0; i < secIdx; i++) n += secs[i].question_count || 0;
+    return fmt ? window.formatQuestionLabel(fmt, n + qIdx + 1) : `Q${n + qIdx + 1}`;
+  },
+
   renderSectionsList() {
     const container = document.getElementById("blueprint-sections-container");
     if (!container) return;
 
-    const sections = window.AppState.currentBlueprintConfig.sections || [];
+    const sections = window.normalizeSections(window.AppState.currentBlueprintConfig.sections || []);
+    const esc = window.escapeHtml;
     container.innerHTML = "";
 
     sections.forEach((sec, idx) => {
       const card = document.createElement("div");
       card.className = "scheme-section-item";
+      const totalM = this.sectionTotal(sec);
+      const subMode = window.AppState.numberingStyle === "sub";
 
-      let totalM = sec.question_count * sec.marks_per_question;
-      if (Array.isArray(sec.question_marks) && sec.question_marks.length === sec.question_count) {
-        totalM = sec.question_marks.reduce((a, b) => a + Number(b), 0);
-      } else if (sec.total_section_marks) {
-        totalM = sec.total_section_marks;
-      }
-      sec.total_section_marks = totalM;
+      const rowsHtml = sec.question_marks.map((m, qi) => `
+        <tr data-q="${qi}">
+          <td class="q-label-cell">${this.questionLabel(idx, qi)}</td>
+          <td><input type="number" class="form-input q-marks-input" min="1" max="50" value="${m}" data-field="marks" aria-label="Marks"></td>
+          <td class="q-or-cell"><label class="q-or-toggle"><input type="checkbox" data-field="or" ${sec.question_choices[qi] ? "checked" : ""}><span>Add OR</span></label></td>
+          <td><input type="number" class="form-input q-marks-input" min="1" max="50" value="${sec.or_marks[qi]}" data-field="ormarks" ${sec.question_choices[qi] ? "" : "disabled"} aria-label="OR question marks"></td>
+        </tr>`).join("");
 
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <input type="text" class="form-input" value="${sec.name}" id="sec-name-${idx}" style="font-weight:700; max-width:68%; padding:4px 8px; font-size:13px;" placeholder="Section Title">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="marks-badge" id="sec-total-m-${idx}">${totalM} Marks</span>
-            <button class="btn-icon" title="Remove this section" id="sec-del-${idx}">
+        <div class="sec-head-row">
+          <input type="text" class="form-input sec-name-input" value="${esc(sec.name)}" data-role="name" placeholder="Section / Question title">
+          <div class="sec-head-actions">
+            <span class="marks-badge" data-role="total">${totalM} Marks</span>
+            <button class="btn-icon" type="button" title="Remove this section" data-role="delete">
               <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 8px;">
-          <input type="text" class="form-input" value="${sec.instructions}" id="sec-instr-${idx}" style="font-size:12px; padding:4px 8px;" placeholder="Section Instructions">
+          <input type="text" class="form-input" value="${esc(sec.instructions)}" data-role="instr" style="font-size:12px; padding:4px 8px;" placeholder="Section instructions">
         </div>
 
-        <div class="grid-4" style="align-items: center; margin-bottom: 8px;">
+        <div class="sec-controls-row">
           <div>
-            <label class="form-label" style="font-size:11px; margin-bottom:2px;">Questions</label>
-            <input type="number" class="form-input" min="1" max="25" value="${sec.question_count}" id="sec-qcount-${idx}" style="padding:4px 8px; font-size:12px;">
+            <label class="form-label sm-label">${subMode ? "Sub-questions" : "Questions"}</label>
+            <input type="number" class="form-input sm-input" min="1" max="26" value="${sec.question_count}" data-role="qcount">
           </div>
           <div>
-            <label class="form-label" style="font-size:11px; margin-bottom:2px;">Marks / Q</label>
-            <input type="number" class="form-input" min="1" max="50" value="${sec.marks_per_question}" id="sec-mq-${idx}" style="padding:4px 8px; font-size:12px;">
+            <label class="form-label sm-label">Marks each</label>
+            <input type="number" class="form-input sm-input" min="1" max="50" value="${sec.marks_per_question}" data-role="mq">
           </div>
-          <div style="grid-column: span 2; display: flex; align-items: center; gap: 8px; padding-top: 14px;">
-            <label class="switch" style="width:32px; height:18px;">
-              <input type="checkbox" id="sec-choice-${idx}" ${sec.has_internal_choice ? 'checked' : ''}>
-              <span class="switch-slider"></span>
-            </label>
-            <span style="font-size:12px; color:var(--text-secondary);">Internal Choice (OR)</span>
-          </div>
+          <label class="q-or-toggle sec-or-master" title="Tick or untick OR for every question at once">
+            <input type="checkbox" data-role="or-all" ${sec.question_choices.every(Boolean) ? "checked" : ""}>
+            <span>OR on all</span>
+          </label>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-          <span style="font-size:11px; font-weight:600; color:var(--text-muted);">Allowed Bloom Levels:</span>
-          ${["L1", "L2", "L3", "L4", "L5", "L6"].map(lvl => {
-            const isChecked = (sec.allowed_levels || []).includes(lvl);
-            return `
-              <label style="cursor:pointer; display:inline-flex; align-items:center; gap:3px; font-size:11px; font-family:var(--font-mono); background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); padding:1px 6px; border-radius:var(--radius-xs);">
-                <input type="checkbox" data-sec-lvl="${idx}" value="${lvl}" ${isChecked ? 'checked' : ''} style="margin:0;">
-                <span>${lvl}</span>
-              </label>
-            `;
-          }).join("")}
+        <div class="q-table-wrap">
+          <table class="q-config-table">
+            <thead><tr><th>${subMode ? "Question" : "No."}</th><th>Marks</th><th>OR option</th><th>OR marks</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+        <div class="sec-hint">OR questions are alternatives, so they are not added to the ${totalM}-mark section total.</div>
+
+        <div class="sec-levels-row">
+          <span class="sec-levels-label">Allowed Bloom Levels:</span>
+          ${["L1", "L2", "L3", "L4", "L5", "L6"].map(lvl => `
+            <label class="lvl-chip">
+              <input type="checkbox" data-sec-lvl="${idx}" value="${lvl}" ${(sec.allowed_levels || []).includes(lvl) ? "checked" : ""}>
+              <span>${lvl}</span>
+            </label>`).join("")}
         </div>
       `;
-
       container.appendChild(card);
 
-      // Bind listeners for inline adjustments
-      card.querySelector(`#sec-name-${idx}`).addEventListener("input", (e) => {
-        sec.name = e.target.value;
-      });
-
-      card.querySelector(`#sec-instr-${idx}`).addEventListener("input", (e) => {
-        sec.instructions = e.target.value;
-      });
-
-      const qCountInput = card.querySelector(`#sec-qcount-${idx}`);
-      const mqInput = card.querySelector(`#sec-mq-${idx}`);
-      const totalBadge = card.querySelector(`#sec-total-m-${idx}`);
-
-      const recalcSection = () => {
-        const qc = parseInt(qCountInput.value) || 1;
-        const mq = parseInt(mqInput.value) || 1;
-        sec.question_marks = null;
-        sec.question_count = qc;
-        sec.marks_per_question = mq;
-        sec.total_section_marks = qc * mq;
-        totalBadge.innerText = `${qc * mq} Marks`;
+      const q = (sel) => card.querySelector(sel);
+      const refreshTotals = () => {
+        sec.total_section_marks = this.sectionTotal(sec);
+        q('[data-role="total"]').innerText = `${sec.total_section_marks} Marks`;
+        q(".sec-hint").innerText = `OR questions are alternatives, so they are not added to the ${sec.total_section_marks}-mark section total.`;
+        sec.has_internal_choice = sec.question_choices.some(Boolean);
+        q('[data-role="or-all"]').checked = sec.question_choices.every(Boolean);
         this.updateTotalMarksIndicator();
+        this.renderUnitPlanner();
       };
 
-      qCountInput.addEventListener("input", recalcSection);
-      mqInput.addEventListener("input", recalcSection);
+      q('[data-role="name"]').addEventListener("input", e => { sec.name = e.target.value; });
+      q('[data-role="instr"]').addEventListener("input", e => { sec.instructions = e.target.value; });
 
-      card.querySelector(`#sec-choice-${idx}`).addEventListener("change", (e) => {
-        sec.has_internal_choice = e.target.checked;
+      // Per-question edits
+      card.querySelectorAll("tbody tr").forEach(tr => {
+        const qi = parseInt(tr.getAttribute("data-q"));
+        const marksIn = tr.querySelector('[data-field="marks"]');
+        const orBox = tr.querySelector('[data-field="or"]');
+        const orMarks = tr.querySelector('[data-field="ormarks"]');
+        marksIn.addEventListener("input", () => {
+          const old = sec.question_marks[qi];
+          const v = Math.max(1, parseInt(marksIn.value) || 1);
+          if (sec.or_marks[qi] === old) { sec.or_marks[qi] = v; orMarks.value = v; }
+          sec.question_marks[qi] = v;
+          refreshTotals();
+        });
+        orBox.addEventListener("change", () => {
+          sec.question_choices[qi] = orBox.checked;
+          orMarks.disabled = !orBox.checked;
+          refreshTotals();
+        });
+        orMarks.addEventListener("input", () => {
+          sec.or_marks[qi] = Math.max(1, parseInt(orMarks.value) || 1);
+        });
+      });
+
+      q('[data-role="or-all"]').addEventListener("change", e => {
+        sec.question_choices = sec.question_choices.map(() => e.target.checked);
+        this.renderSectionsList();
+        this.updateTotalMarksIndicator();
+      });
+
+      // Number of questions / default marks
+      q('[data-role="qcount"]').addEventListener("change", e => {
+        const n = Math.min(26, Math.max(1, parseInt(e.target.value) || 1));
+        const dm = parseInt(sec.marks_per_question) || 2;
+        while (sec.question_marks.length < n) {
+          sec.question_marks.push(dm); sec.question_choices.push(false); sec.or_marks.push(dm);
+        }
+        sec.question_marks.length = n; sec.question_choices.length = n; sec.or_marks.length = n;
+        sec.question_count = n;
+        sec.total_section_marks = this.sectionTotal(sec);
+        this.renderSectionsList();
+        this.updateTotalMarksIndicator();
+        this.renderUnitPlanner();
+      });
+      q('[data-role="mq"]').addEventListener("change", e => {
+        const mq = Math.max(1, parseInt(e.target.value) || 1);
+        sec.marks_per_question = mq;
+        sec.question_marks = sec.question_marks.map(() => mq);
+        sec.or_marks = sec.or_marks.map(() => mq);
+        this.renderSectionsList();
+        this.updateTotalMarksIndicator();
+        this.renderUnitPlanner();
       });
 
       card.querySelectorAll(`[data-sec-lvl="${idx}"]`).forEach(cb => {
@@ -331,23 +429,14 @@ window.BlueprintModule = {
         });
       });
 
-      card.querySelector(`#sec-del-${idx}`).addEventListener("click", () => {
-        this.removeSection(idx);
-      });
+      q('[data-role="delete"]').addEventListener("click", () => this.removeSection(idx));
     });
   },
 
   updateTotalMarksIndicator() {
     const sections = window.AppState.currentBlueprintConfig.sections || [];
-    const computedTotal = sections.reduce((acc, s) => {
-      if (Array.isArray(s.question_marks) && s.question_marks.length === s.question_count) {
-        return acc + s.question_marks.reduce((a, b) => a + Number(b), 0);
-      }
-      if (s.total_section_marks) {
-        return acc + Number(s.total_section_marks);
-      }
-      return acc + (s.question_count * s.marks_per_question);
-    }, 0);
+    window.normalizeSections(sections);
+    const computedTotal = sections.reduce((acc, s) => acc + this.sectionTotal(s), 0);
     const indicator = document.getElementById("computed-blueprint-marks");
     if (indicator) {
       indicator.innerText = `${computedTotal} Marks`;
@@ -358,6 +447,120 @@ window.BlueprintModule = {
       totalMarksInput.value = computedTotal;
       window.AppState.currentBlueprintConfig.total_marks = computedTotal;
     }
+  },
+
+  // ------------------------------------------------------------------
+  // Unit-wise marks weightage and Bloom levels
+  // ------------------------------------------------------------------
+  planTotalMarks() {
+    return parseInt(document.getElementById("blueprint-total-marks")?.value) || window.AppState.currentBlueprintConfig.total_marks || 0;
+  },
+
+  renderUnitPlanner() {
+    const body = document.getElementById("unit-planner-body");
+    if (!body) return;
+    const syl = window.getActiveSyllabus ? window.getActiveSyllabus() : window.AppState.currentSyllabus;
+    const plan = window.AppState.unitPlan;
+    const enableBox = document.getElementById("unit-plan-enable");
+    if (enableBox) enableBox.checked = !!plan.enabled;
+
+    if (!syl || !syl.units || !syl.units.length) {
+      body.innerHTML = '<div class="planner-empty">Load a syllabus (Stage 1) or upload a question set to plan unit-wise marks.</div>';
+      return;
+    }
+
+    const total = this.planTotalMarks();
+    const prev = {};
+    (plan.units || []).forEach(u => { prev[u.unit_num] = u; });
+    const n = syl.units.length;
+    const base = Math.floor(total / n);
+    let extra = total - base * n;
+    plan.units = syl.units.map((u, i) => {
+      const old = prev[u.unit_num];
+      const even = base + (i < extra ? 1 : 0);
+      return {
+        unit_num: u.unit_num,
+        title: u.title,
+        co: u.co,
+        marks: (old && window.AppState.unitPlanAuto === false) ? old.marks : even,
+        levels: old ? old.levels : []          // default: no Bloom level selected
+      };
+    });
+
+    const esc = window.escapeHtml;
+    const levelNames = { L1: "Remember", L2: "Understand", L3: "Apply", L4: "Analyze", L5: "Evaluate", L6: "Create" };
+    body.innerHTML = `
+      <div class="q-table-wrap">
+        <table class="q-config-table unit-plan-table">
+          <thead><tr><th>Unit</th><th>Marks</th><th>Share</th><th>Bloom levels for this unit <span class="th-note">(none ticked = any level)</span></th></tr></thead>
+          <tbody>
+            ${plan.units.map((u, i) => `
+              <tr data-i="${i}">
+                <td class="unit-name-cell"><strong>Unit ${esc(u.unit_num)}</strong><span>${esc(u.title)}</span></td>
+                <td><input type="number" class="form-input q-marks-input" min="0" max="500" step="1" value="${u.marks}" data-field="marks" ${plan.enabled ? "" : "disabled"} aria-label="Marks for unit ${esc(u.unit_num)}"></td>
+                <td class="unit-share" data-role="share">0%</td>
+                <td>
+                  <div class="lvl-chip-row">
+                    ${["L1","L2","L3","L4","L5","L6"].map(l => `
+                      <label class="lvl-chip" title="${levelNames[l]}">
+                        <input type="checkbox" data-lvl="${l}" ${u.levels.includes(l) ? "checked" : ""}><span>${l}</span>
+                      </label>`).join("")}
+                  </div>
+                </td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+      <div class="planner-total" id="unit-plan-total"></div>`;
+
+    const refreshTotals = () => {
+      const sum = plan.units.reduce((a, u) => a + (Number(u.marks) || 0), 0);
+      const el = document.getElementById("unit-plan-total");
+      const paperTotal = this.planTotalMarks();
+      if (el) {
+        if (!plan.enabled) {
+          el.className = "planner-total";
+          el.textContent = "Unit-wise marks weightage is off. Questions are spread across units automatically.";
+        } else if (sum === paperTotal) {
+          el.className = "planner-total ok";
+          el.textContent = `Allocated ${sum} of ${paperTotal} marks.`;
+        } else {
+          el.className = "planner-total warn";
+          el.textContent = `Allocated ${sum} of ${paperTotal} marks. The weightage will be scaled proportionally to ${paperTotal} when the paper is generated.`;
+        }
+      }
+      body.querySelectorAll("tbody tr").forEach(tr => {
+        const u = plan.units[parseInt(tr.getAttribute("data-i"))];
+        const pct = sum ? Math.round((Number(u.marks) || 0) / sum * 100) : 0;
+        tr.querySelector('[data-role="share"]').textContent = `${pct}%`;
+      });
+    };
+
+    body.querySelectorAll("tbody tr").forEach(tr => {
+      const u = plan.units[parseInt(tr.getAttribute("data-i"))];
+      tr.querySelector('[data-field="marks"]').addEventListener("input", e => {
+        u.marks = Math.max(0, parseInt(e.target.value) || 0);
+        u._touched = true;
+        window.AppState.unitPlanAuto = false;
+        refreshTotals();
+      });
+      tr.querySelectorAll("[data-lvl]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          u.levels = Array.from(tr.querySelectorAll("[data-lvl]:checked")).map(c => c.getAttribute("data-lvl"));
+        });
+      });
+    });
+    refreshTotals();
+  },
+
+  getUnitPlanPayload() {
+    const plan = window.AppState.unitPlan;
+    if (!plan || !plan.units || !plan.units.length) return null;
+    return {
+      enabled: true,
+      use_weightage: !!plan.enabled,
+      units: plan.units.map(u => ({ unit_num: u.unit_num, marks: Number(u.marks) || 0, levels: u.levels || [] }))
+    };
   },
 
   renderSliders() {
@@ -496,3 +699,23 @@ window.BlueprintModule = {
 document.addEventListener("DOMContentLoaded", () => {
   window.BlueprintModule.init();
 });
+
+
+// The syllabus used for generation: units derived from an uploaded question set, or the loaded syllabus
+window.getActiveSyllabus = function () {
+  const st = window.AppState;
+  const base = (st.useUploadedSet && st.uploadedSet && st.uploadedSet.syllabus)
+    ? st.uploadedSet.syllabus
+    : st.currentSyllabus;
+  if (!base) return base;
+  // The Course Code / Course Title fields are the source of truth: the parsed syllabus only
+  // remembers the values typed at parse time, so re-apply the current ones every time.
+  const syl = JSON.parse(JSON.stringify(base));
+  const code = document.getElementById("course-code")?.value.trim();
+  const name = document.getElementById("course-name")?.value.trim();
+  const dept = document.getElementById("course-dept")?.value.trim();
+  if (code) syl.code = code;
+  if (name) syl.name = name;
+  if (dept) syl.department = dept;
+  return syl;
+};

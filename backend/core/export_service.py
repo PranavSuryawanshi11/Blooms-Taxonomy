@@ -238,6 +238,38 @@ def _svg_to_png(svg: str):
         return None
 
 
+_WORD_FONTS = [("times", "Times New Roman"), ("arial", "Arial"), ("helvetica", "Arial"), ("calibri", "Calibri"),
+               ("cambria", "Cambria"), ("georgia", "Georgia"), ("verdana", "Verdana"), ("tahoma", "Tahoma"),
+               ("garamond", "Garamond"), ("century", "Century Schoolbook"), ("segoe", "Segoe UI"),
+               ("palatino", "Palatino Linotype"), ("book antiqua", "Book Antiqua"), ("mangal", "Mangal")]
+
+
+def _word_font(style: Dict[str, Any], fallback: str) -> str:
+    name = (style.get("font_name") or "").lower()
+    for key, word_name in _WORD_FONTS:
+        if key in name:
+            return word_name
+    if style.get("font_family") == "sans":
+        return "Arial"
+    if style.get("font_family") == "serif":
+        return "Times New Roman"
+    return fallback
+
+
+def _hex_rgb(color):
+    from docx.shared import RGBColor
+    try:
+        c = (color or "").lstrip("#")
+        return RGBColor(int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)) if len(c) == 6 else None
+    except Exception:
+        return None
+
+
+def _fmt_marks(fmt: str, m) -> str:
+    return {"[N]": f"[{m}]", "(N)": f"({m})", "[N Marks]": f"[{m} Marks]",
+            "(N Marks)": f"({m} Marks)", "NM": f"{m}M"}.get(fmt, f"[{m}]")
+
+
 def generate_word_docx(paper_data: Dict[str, Any]) -> bytes:
     """
     Clean exam-paper .docx: institution header, course/time/marks, instructions, sections,
@@ -266,17 +298,25 @@ def generate_word_docx(paper_data: Dict[str, Any]) -> bytes:
     marks = paper_data.get("total_marks", "")
     instructions = layout.get("instructions") or paper_data.get("instructions") or []
     font = "Arial" if layout.get("font_family") == "sans" else "Times New Roman"
+    ts = paper_data.get("template_style") or {}
+    tstyle = ts.get("style") or {}
+    if tstyle:
+        font = _word_font(tstyle, font)
+    base_pt = float(tstyle.get("base_font_size_pt") or 11)
+    marks_fmt = tstyle.get("marks_format") or "[N]"
+    margin_in = float(tstyle.get("margin_in") or 0.8)
+    page_w_in, page_h_in = (8.5, 11.0) if tstyle.get("page_size") == "Letter" else (8.27, 11.69)
 
     doc = Document()
     sec0 = doc.sections[0]
-    sec0.page_width, sec0.page_height = Inches(8.27), Inches(11.69)          # A4
-    sec0.left_margin = sec0.right_margin = Inches(0.8)
+    sec0.page_width, sec0.page_height = Inches(page_w_in), Inches(page_h_in)
+    sec0.left_margin = sec0.right_margin = Inches(margin_in)
     sec0.top_margin = sec0.bottom_margin = Inches(0.7)
-    text_width = 8.27 - 1.6
+    text_width = page_w_in - 2 * margin_in
 
     normal = doc.styles["Normal"]
     normal.font.name = font
-    normal.font.size = Pt(11)
+    normal.font.size = Pt(base_pt)
     normal.element.rPr.rFonts.set(qn("w:eastAsia"), font)
     normal.paragraph_format.space_after = Pt(3)
 
@@ -303,34 +343,140 @@ def generate_word_docx(paper_data: Dict[str, Any]) -> bytes:
         b.append(line); pPr.append(b)
 
     C = WD_ALIGN_PARAGRAPH.CENTER
-    # ---- header ----
-    if inst:
-        para(inst.upper(), bold=True, size=14, align=C, after=1)
-    if dept and dept != prog:
-        para(dept, bold=True, size=11, align=C, after=1)
-    if prog:
-        para(f"Programme: {prog}", bold=True, size=11, align=C, after=1)
-    para(exam.upper(), bold=True, size=12.5, align=C, after=1)
-    sess = " | ".join(x for x in [session, f"Regulation: {regulation}" if regulation else ""] if x)
-    if sess:
-        para(sess, size=10, align=C, after=1)
-    bottom_border(para("", after=4))
+    ALIGN = {"left": WD_ALIGN_PARAGRAPH.LEFT, "center": WD_ALIGN_PARAGRAPH.CENTER, "right": WD_ALIGN_PARAGRAPH.RIGHT}
+
+    def no_borders(table):
+        tblPr = table._tbl.tblPr
+        borders = OxmlElement("w:tblBorders")
+        for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+            el = OxmlElement(f"w:{edge}")
+            el.set(qn("w:val"), "nil")
+            borders.append(el)
+        tblPr.append(borders)
+
+    def set_cell_width(cell, inches):
+        cell.width = Inches(inches)
+        tcPr = cell._tc.get_or_add_tcPr()
+        w = OxmlElement("w:tcW")
+        w.set(qn("w:w"), str(int(inches * 1440)))
+        w.set(qn("w:type"), "dxa")
+        tcPr.append(w)
+
+    def header_line(container_par, h):
+        r = container_par.add_run(h.get("text", ""))
+        r.bold, r.italic = bool(h.get("bold")), bool(h.get("italic"))
+        r.font.size = Pt(float(h.get("size") or base_pt))
+        col = _hex_rgb(h.get("color"))
+        if col is not None:
+            r.font.color.rgb = col
+        container_par.alignment = ALIGN.get(h.get("align"), C)
+        container_par.paragraph_format.space_after = Pt(1)
+        container_par.paragraph_format.space_before = Pt(0)
+
+    if ts.get("header_lines"):
+        # ----- header copied from the college's own paper: logo(s) + every line in its own style -----
+        logos = [lg for lg in (ts.get("logos") or []) if _png_bytes(lg.get("data_url", ""))]
+        side = {"left": None, "right": None, "center": None}
+        for lg in logos:
+            side.setdefault(lg.get("position", "left"), None)
+            if side.get(lg.get("position", "left")) is None:
+                side[lg.get("position", "left")] = lg
+        if side["left"] or side["right"]:
+            def _logo_w(lg):
+                try:
+                    from PIL import Image as _I
+                    im = _I.open(io.BytesIO(_png_bytes(lg["data_url"])))
+                    h_in = min(max(float(lg.get("height_pt") or 56) / 72.0, 0.4), 1.1)
+                    return h_in * im.width / im.height
+                except Exception:
+                    return 1.0
+            logo_col = max([_logo_w(lg) for lg in (side["left"], side["right"]) if lg] or [1.0]) + 0.08
+            ht = doc.add_table(rows=1, cols=3)
+            ht.alignment = WD_TABLE_ALIGNMENT.CENTER
+            ht.autofit = False
+            no_borders(ht)
+            tblPr = ht._tbl.tblPr
+            lay = OxmlElement("w:tblLayout"); lay.set(qn("w:type"), "fixed"); tblPr.append(lay)
+            mar = OxmlElement("w:tblCellMar")
+            for edge in ("top", "left", "bottom", "right"):
+                m = OxmlElement(f"w:{edge}"); m.set(qn("w:w"), "0"); m.set(qn("w:type"), "dxa"); mar.append(m)
+            tblPr.append(mar)
+            widths = [logo_col, text_width - 2 * logo_col, logo_col]
+            for i, wdt in enumerate(widths):
+                ht.columns[i].width = Inches(wdt)              # table grid (what Word/LibreOffice lay out by)
+                set_cell_width(ht.rows[0].cells[i], wdt)
+            for idx, key, al in ((0, "left", WD_ALIGN_PARAGRAPH.LEFT), (2, "right", WD_ALIGN_PARAGRAPH.RIGHT)):
+                lg = side[key]
+                if lg:
+                    cp = ht.rows[0].cells[idx].paragraphs[0]
+                    cp.alignment = al
+                    height_in = min(max(float(lg.get("height_pt") or 56) / 72.0, 0.4), 1.1)
+                    cp.add_run().add_picture(io.BytesIO(_png_bytes(lg["data_url"])), height=Inches(height_in))
+            mid = ht.rows[0].cells[1]
+            for n, h in enumerate(ts["header_lines"]):
+                header_line(mid.paragraphs[0] if n == 0 else mid.add_paragraph(), h)
+        else:
+            if side["center"]:
+                lp = para("", align=C, after=2)
+                lp.add_run().add_picture(io.BytesIO(_png_bytes(side["center"]["data_url"])),
+                                         height=Inches(min(max(float(side["center"].get("height_pt") or 56) / 72.0, 0.4), 1.1)))
+            for h in ts["header_lines"]:
+                header_line(doc.add_paragraph(), h)
+        if tstyle.get("header_border", "bottom") != "none":
+            bottom_border(para("", after=4))
+        else:
+            para("", after=2)
+    else:
+        if inst:
+            para(inst.upper(), bold=True, size=14, align=C, after=1)
+        if dept and dept != prog:
+            para(dept, bold=True, size=11, align=C, after=1)
+        if prog:
+            para(f"Programme: {prog}", bold=True, size=11, align=C, after=1)
+        para(exam.upper(), bold=True, size=12.5, align=C, after=1)
+        sess = " | ".join(x for x in [session, f"Regulation: {regulation}" if regulation else ""] if x)
+        if sess:
+            para(sess, size=10, align=C, after=1)
+        bottom_border(para("", after=4))
 
     # ---- course / time / marks ----
-    t = doc.add_table(rows=2, cols=2)
-    t.alignment = WD_TABLE_ALIGNMENT.CENTER
-    cells = [
-        (f"Course: {code}{': ' if code and course else ''}{course}", WD_ALIGN_PARAGRAPH.LEFT),
-        ("Roll No / USN: ____________________", WD_ALIGN_PARAGRAPH.RIGHT),
-        (f"Time: {duration}" if duration else "", WD_ALIGN_PARAGRAPH.LEFT),
-        (f"Max. Marks: {marks}" if marks != "" else "", WD_ALIGN_PARAGRAPH.RIGHT),
-    ]
-    for i, (txt, al) in enumerate(cells):
-        c = t.rows[i // 2].cells[i % 2]
-        c.paragraphs[0].text = ""
-        r = c.paragraphs[0].add_run(txt); r.bold = True; r.font.size = Pt(10.5)
-        c.paragraphs[0].alignment = al
-    bottom_border(para("", after=4))
+    meta_rows = ts.get("meta_layout") or []
+    if meta_rows:
+        values = {"code": code, "course": course, "duration": duration, "marks": marks,
+                  "roll": "____________________", "date": "________________"}
+        for row in meta_rows:
+            mt = doc.add_table(rows=1, cols=len(row))
+            mt.alignment = WD_TABLE_ALIGNMENT.CENTER
+            no_borders(mt)
+            for i, cell in enumerate(row):
+                c = mt.rows[0].cells[i]
+                val = values.get(cell.get("key"), cell.get("default") or "________")
+                if cell.get("key") == "course" and not val:
+                    val = ""
+                par0 = c.paragraphs[0]
+                r1 = par0.add_run(f"{cell.get('label', '')}: ")
+                r1.bold = True
+                r1.font.size = Pt(max(base_pt - 0.5, 8))
+                r2 = par0.add_run(str(val))
+                r2.font.size = Pt(max(base_pt - 0.5, 8))
+                par0.alignment = (WD_ALIGN_PARAGRAPH.LEFT if i == 0 else
+                                  WD_ALIGN_PARAGRAPH.RIGHT if i == len(row) - 1 else WD_ALIGN_PARAGRAPH.CENTER)
+        bottom_border(para("", after=4))
+    else:
+        t = doc.add_table(rows=2, cols=2)
+        t.alignment = WD_TABLE_ALIGNMENT.CENTER
+        cells = [
+            (f"Course: {code}{': ' if code and course else ''}{course}", WD_ALIGN_PARAGRAPH.LEFT),
+            ("Roll No / USN: ____________________", WD_ALIGN_PARAGRAPH.RIGHT),
+            (f"Time: {duration}" if duration else "", WD_ALIGN_PARAGRAPH.LEFT),
+            (f"Max. Marks: {marks}" if marks != "" else "", WD_ALIGN_PARAGRAPH.RIGHT),
+        ]
+        for i, (txt, al) in enumerate(cells):
+            c = t.rows[i // 2].cells[i % 2]
+            c.paragraphs[0].text = ""
+            r = c.paragraphs[0].add_run(txt); r.bold = True; r.font.size = Pt(10.5)
+            c.paragraphs[0].alignment = al
+        bottom_border(para("", after=4))
 
     # ---- instructions ----
     if instructions:
@@ -343,17 +489,18 @@ def generate_word_docx(paper_data: Dict[str, Any]) -> bytes:
     def add_question(q: Dict[str, Any], label: str):
         p = doc.add_paragraph()
         pf = p.paragraph_format
-        pf.left_indent = Inches(0.45)
-        pf.first_line_indent = Inches(-0.45)
+        indent = min(1.1, max(0.45, 0.085 * len(label) + 0.12))     # room for labels such as "Q.1 (a) (OR)"
+        pf.left_indent = Inches(indent)
+        pf.first_line_indent = Inches(-indent)
         pf.space_before = Pt(6)
         pf.space_after = Pt(2)
-        pf.tab_stops.add_tab_stop(Inches(0.45))
+        pf.tab_stops.add_tab_stop(Inches(indent))
         if show_marks:
             pf.tab_stops.add_tab_stop(Inches(text_width), WD_TAB_ALIGNMENT.RIGHT)
         r = p.add_run(f"{label}\t"); r.bold = True
         p.add_run(_plain(q.get("question_text", "")))
         if show_marks and q.get("marks") not in (None, ""):
-            r = p.add_run(f"\t[{q.get('marks')}]"); r.bold = True
+            r = p.add_run(f"\t{_fmt_marks(marks_fmt, q.get('marks'))}"); r.bold = True
 
         fig = q.get("figure") or {}
         png = _png_bytes(q.get("figure_png") or "")
@@ -377,7 +524,11 @@ def generate_word_docx(paper_data: Dict[str, Any]) -> bytes:
         p.paragraph_format.keep_with_next = bool(png)
 
     for sec in paper_data.get("sections", []):
-        sp = para((sec.get("section_name") or "").upper(), bold=True, size=11, before=10, after=1)
+        st_title = tstyle.get("section_title") or {}
+        sec_text = sec.get("section_name") or ""
+        sp = para(sec_text.upper() if st_title.get("uppercase", True) else sec_text, bold=st_title.get("bold", True),
+                  size=min(base_pt + 0.5, 13), before=10, after=1,
+                  align=ALIGN.get(st_title.get("align")) if st_title.get("align") else None)
         sp.paragraph_format.keep_with_next = True
         if sec.get("instructions"):
             para(_plain(sec["instructions"]), italic=True, size=9.5, after=2).paragraph_format.keep_with_next = True

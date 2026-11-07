@@ -89,16 +89,20 @@ def run_tests():
     # 8. Test Cognitive Classifier Heuristic
     # 9. Test User Authentication & History
     from core.auth_history_service import authenticate_user, register_user, save_paper_to_history, get_user_history, get_history_paper, delete_history_paper
-    turing = authenticate_user("prof.turing", "password123")
-    assert turing is not None and turing["username"] == "prof.turing", "Failed to authenticate demo user prof.turing"
-    print(f"[PASS] User authentication verified for {turing['display_name']}.")
+    import uuid as _uuid
+    _sfx = _uuid.uuid4().hex[:6]
+    user_a = register_user(f"prof_a_{_sfx}", "Prof. A", "CSE", "Str0ngPass!A")
+    user_b = register_user(f"prof_b_{_sfx}", "Prof. B", "CSE", "Str0ngPass!B")
+    authed, _err = authenticate_user(f"prof_a_{_sfx}", "Str0ngPass!A")
+    assert authed is not None and authed["user_id"] == user_a["user_id"], "Failed to authenticate registered user"
+    print(f"[PASS] User authentication verified for {authed['display_name']}.")
 
     # 10. Test Multi-User Differentiation (Same syllabus, distinct outputs)
-    blueprint_a = build_blueprint(parsed, exam_cfg, dist, user_seed="usr_turing_001")
-    paper_a = generate_paper_from_blueprint(blueprint_a, user_seed="usr_turing_001")
+    blueprint_a = build_blueprint(parsed, exam_cfg, dist, user_seed=user_a["user_id"])
+    paper_a = generate_paper_from_blueprint(blueprint_a, user_seed=user_a["user_id"])
 
-    blueprint_b = build_blueprint(parsed, exam_cfg, dist, user_seed="usr_hopper_002")
-    paper_b = generate_paper_from_blueprint(blueprint_b, user_seed="usr_hopper_002")
+    blueprint_b = build_blueprint(parsed, exam_cfg, dist, user_seed=user_b["user_id"])
+    paper_b = generate_paper_from_blueprint(blueprint_b, user_seed=user_b["user_id"])
 
     questions_a = [q["question_text"] for q in paper_a["all_questions"]]
     questions_b = [q["question_text"] for q in paper_b["all_questions"]]
@@ -114,17 +118,18 @@ def run_tests():
     print(f"[PASS] Academic Technical Vector Diagram generated: '{fig_er['title']}' ({len(fig_er['svg'])} bytes SVG).")
 
     # 12. Test History Persistence
-    pid = save_paper_to_history("usr_turing_001", paper_a)
-    history = get_user_history("usr_turing_001")
+    pid = save_paper_to_history(user_a["user_id"], paper_a)
+    history = get_user_history(user_a["user_id"])
     assert any(h["paper_id"] == pid for h in history), "Paper not found in user history"
-    retrieved_paper = get_history_paper("usr_turing_001", pid)
+    retrieved_paper = get_history_paper(user_a["user_id"], pid)
     assert retrieved_paper is not None and len(retrieved_paper["all_questions"]) == len(paper_a["all_questions"])
-    deleted = delete_history_paper("usr_turing_001", pid)
+    deleted = delete_history_paper(user_a["user_id"], pid)
     assert deleted, "Failed to delete test paper from history"
     print("[PASS] User history persistence, reload, and deletion verified.")
 
     # 13. Test Custom Template CRUD
-    from app import load_all_templates, save_custom_template, delete_custom_template
+    from app import load_all_templates
+    from core.auth_history_service import save_custom_template_db, delete_custom_template_db
     custom_tmpl = {
         "name": "Unit Test Custom Exam",
         "total_marks": 75,
@@ -134,11 +139,11 @@ def run_tests():
             {"id": "s2", "name": "Part B", "question_count": 6, "marks_per_question": 10, "total_section_marks": 60, "allowed_levels": ["L3", "L4", "L5"]}
         ]
     }
-    save_custom_template("test_custom_75", custom_tmpl)
-    templates = load_all_templates()
+    save_custom_template_db("test_custom_75", custom_tmpl, user_a["user_id"])
+    templates = load_all_templates(user_a["user_id"])
     assert "test_custom_75" in templates, "Custom template was not loaded"
-    delete_custom_template("test_custom_75")
-    assert "test_custom_75" not in load_all_templates(), "Custom template was not deleted"
+    delete_custom_template_db("test_custom_75", user_a["user_id"])
+    assert "test_custom_75" not in load_all_templates(user_a["user_id"]), "Custom template was not deleted"
     print("[PASS] Custom template creation, retrieval, and deletion verified.")
 
     # 14. Test AICTE Action Verbs Standards Compliance & CO Fulfillment Matrix

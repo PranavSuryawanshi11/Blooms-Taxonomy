@@ -194,9 +194,7 @@ flowchart TD
 │   │   └── syllabus_parser.py         # PDF syllabus extractor and module segmenter
 │   ├── data/
 │   │   ├── bloom_stems.json           # Action verbs and stems for each Bloom cognitive level
-│   │   ├── custom_templates.json      # User-defined examination templates
 │   │   ├── sample_syllabi.json        # Preloaded reference syllabi for quick demonstration
-│   │   └── user_question_sets.json    # Question bank sets
 │   ├── test_auth_history_integration.py # Auth and history service integration tests
 │   ├── test_e2e_live.py               # End-to-end question paper workflow tests
 │   └── test_generator.py              # Cognitive paper generation unit tests
@@ -390,7 +388,7 @@ python backend/test_e2e_live.py
 ## 🔒 Security & Confidentiality
 
 - **Zero-Credential Commits**: Secret `.env` files are ignored across all folders by `.gitignore`.
-- **Faculty Data Isolation**: Faculty accounts and generated history are persisted locally in SQLite database `backend/data/bloomcraft.db` (strictly ignored from version control).
+- **Faculty Data Isolation**: Faculty accounts, sessions, guest devices, generated history, question sets and custom templates are stored in **PostgreSQL** (`DATABASE_URL`). Passwords and recovery codes are hashed with Argon2id; session tokens are stored only as SHA-256 digests and stay valid for 90 days (sliding).
 - **PBKDF2 Password Hashing**: Passwords are saved with cryptographically secure salted hashes (`PBKDF2-SHA256` with 120,000 iterations).
 - **Responsible Disclosure**: See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
@@ -416,3 +414,49 @@ This project is released under the **BloomCraft AI Non-Commercial Source-Availab
 
 For complete legal terms, review the [LICENSE](LICENSE) file. For commercial licensing inquiries or enterprise permissions, contact:
 **[`pranavsuryawanshi955@gmail.com`](mailto:pranavsuryawanshi955@gmail.com)**.
+
+
+## PostgreSQL setup (required)
+
+BloomCraft stores everything in PostgreSQL. Tables are created automatically on first start.
+
+```bash
+# Option A - Docker (database + app, data kept in a named volume)
+POSTGRES_PASSWORD=choose-a-strong-one docker compose up -d
+
+# Option B - your own PostgreSQL
+createdb bloomcraft
+export DATABASE_URL=postgresql://user:password@localhost:5432/bloomcraft
+cd backend && python app.py
+```
+
+Back up regularly with `pg_dump bloomcraft > backup.sql`.
+
+## Accounts and guest access
+
+- **Faculty accounts**: password rules are 8+ characters with letters and numbers. A one-time **recovery code** is shown at registration and is required to reset a forgotten password. Five wrong passwords lock the account for 15 minutes.
+- **Continue as Guest**: one question paper per device. The device is recognised by an id kept in the browser (local storage plus a long-lived cookie); clearing both resets it, so use faculty accounts where strict limits matter.
+
+## New generation options
+
+- **Q.1 (a), (b), (c) numbering** per section, with per-sub-question marks.
+- **OR questions**: tick which questions get an OR alternative and enter the OR marks yourself.
+- **Unit-wise marks weightage** and **unit-wise Bloom levels** (no level ticked = unrestricted).
+- **Upload Question Set** (PDF, DOCX, TXT, MD, CSV, JSON): unit names, CO and PO are derived from the questions, then press *Generate Question Paper*.
+
+## Add your college template (copy an old question paper)
+
+In the Blueprint tab press **Add Your College Template**, then upload any old question paper from your college
+(text PDF, Word `.docx`, or a photo/scan). BloomCraft reads it and shows a review screen with:
+
+- every **header line** (society, college name, tagline, affiliation, regional-language title, programme, exam title) with its own font size, bold / italic, colour and alignment, in the original order
+- the **logo(s)** with left / centre / right position and size (you can replace or add one)
+- the **course / time / marks / roll-number rows** exactly as laid out
+- the **instructions**, the **sections** (questions per section, marks of each sub-question, which have OR and their marks)
+- the **numbering style** (`Q.1 (a)`, `Q.1 a)`, `Q1`, `1.` ...), font, base size, page margins and the rule under the header
+
+Fix anything that was misread, press **Save & Use Template**, and it appears under *My College Templates*. New papers
+use the saved header and logo on screen and in the Word export. Templates are private to your account.
+
+Scanned PDFs and photos need OCR: install Tesseract (`apt install tesseract-ocr`; the Docker image includes it).
+Text PDFs and Word files do not need it and give the most exact copy.

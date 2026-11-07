@@ -73,7 +73,7 @@ window.GeneratorModule = {
   },
 
   async generatePaper() {
-    const syllabus = window.AppState.currentSyllabus;
+    const syllabus = window.getActiveSyllabus ? window.getActiveSyllabus() : window.AppState.currentSyllabus;
     if (!syllabus || !syllabus.units || syllabus.units.length === 0) {
       showToast("Please parse or select a curriculum document first.", "error");
       window.switchTab("syllabus");
@@ -84,11 +84,18 @@ window.GeneratorModule = {
     const distribution = window.AppState.currentDistribution;
     const apiConfig = window.AppState.apiConfig;
     const customLayout = window.AppState.customLayout;
-    const genSource = window.AppState.generationSource || "aicte_engine";
+    const genSource = window.AppState.useUploadedSet ? "user_sets" : (window.AppState.generationSource || "aicte_engine");
+    const examConfig = JSON.parse(JSON.stringify(blueprintConfig));
+    examConfig.numbering_style = window.AppState.numberingStyle || "sequential";
+    const unitPlan = window.BlueprintModule && window.BlueprintModule.getUnitPlanPayload
+      ? window.BlueprintModule.getUnitPlanPayload() : null;
 
     // Synchronize custom layout institution/exam title with blueprint
     customLayout.institution_name = blueprintConfig.institution_name;
     customLayout.exam_title = blueprintConfig.exam_title;
+    if (window.syncAcademicYear) window.syncAcademicYear();
+    const academicYear = window.getAcademicYear ? window.getAcademicYear() : "";
+    const yearSemester = window.getYearSemester ? window.getYearSemester() : "";
 
     const generateBtn = document.getElementById("btn-generate-paper");
     const origHtml = generateBtn ? generateBtn.innerHTML : "";
@@ -99,14 +106,13 @@ window.GeneratorModule = {
 
     try {
       const userId = window.AppState.currentUser?.user_id;
-      const headers = { "Content-Type": "application/json" };
-      if (window.AuthModule && window.AuthModule.authToken) {
-        headers["Authorization"] = `Bearer ${window.AuthModule.authToken}`;
-      }
+      const headers = window.authHeaders({ "Content-Type": "application/json" });
 
       // Check if user chose to generate from their custom question sets
       let questionSetsPayload = undefined;
-      if (genSource === "user_sets" || genSource === "hybrid") {
+      if (window.AppState.useUploadedSet && window.AppState.uploadedSet) {
+        questionSetsPayload = [window.AppState.uploadedSet.set];
+      } else if (genSource === "user_sets" || genSource === "hybrid") {
         questionSetsPayload = window.AppState.userQuestionSets;
       }
 
@@ -115,11 +121,14 @@ window.GeneratorModule = {
         headers: headers,
         body: JSON.stringify({
           syllabus: syllabus,
-          exam_config: blueprintConfig,
+          exam_config: examConfig,
+          unit_plan: unitPlan,
           distribution: distribution,
           api_config: apiConfig,
           diagram_mode: window.AppState.diagramMode || "auto",
           custom_layout: customLayout,
+          academic_year: academicYear,
+          year_semester: yearSemester,
           question_sets: questionSetsPayload,
           user_id: userId || undefined,
           user_seed: userId || undefined
@@ -127,16 +136,27 @@ window.GeneratorModule = {
       });
 
       const data = await res.json();
+      if (data.guest_quota && window.AuthModule) {
+        window.AuthModule.setGuestQuota(data.guest_quota);
+      }
       if (data.success) {
         window.AppState.currentPaper = data.paper;
         this.renderPaper(data.paper);
         window.switchTab("studio");
         showToast("Examination paper synthesized successfully with AICTE verb standards.", "success");
+        if (data.paper.marks_check && data.paper.marks_check.matches === false) {
+          showToast(`Questions add up to ${data.paper.marks_check.actual} marks but the paper is set to ${data.paper.marks_check.expected}. Edit marks in the studio or adjust the scheme.`, "info");
+        }
         if (window.AuthModule && window.AuthModule.refreshHistory) {
           window.AuthModule.refreshHistory();
         }
       } else {
-        showToast(data.error || "Failed to synthesize examination paper.", "error");
+        if (data.guest_limit_reached && window.AuthModule) {
+          window.AuthModule.setGuestQuota({ limit: 1, used: 1, remaining: 0 });
+          window.AuthModule.showGuestLimitDialog();
+        } else {
+          showToast(data.error || "Failed to synthesize examination paper.", "error");
+        }
       }
     } catch (err) {
       console.error(err);
@@ -149,9 +169,23 @@ window.GeneratorModule = {
     }
   },
 
+  // The server sends each question twice (inside sections and again in all_questions) and JSON turns
+  // them into two separate copies. The paper on screen is drawn from the section copies, so edits made
+  // to the all_questions copy (regenerate, edit, diagram) never showed up. Make them one object again.
+  linkPaperQuestions(paper) {
+    if (!paper) return;
+    const byId = {};
+    (paper.sections || []).forEach((sec) => (sec.questions || []).forEach((q) => {
+      if (q && q.slot_id) byId[q.slot_id] = q;
+      if (q && q.or_question && q.or_question.slot_id) byId[q.or_question.slot_id] = q.or_question;
+    }));
+    paper.all_questions = (paper.all_questions || []).map((q) => (q && byId[q.slot_id]) || q);
+  },
+
   renderPaper(paper) {
     const container = document.getElementById("paper-render-target");
     if (!container) return;
+    this.linkPaperQuestions(paper);
 
     // Apply custom layout values to sheet header
     window.applyLayoutToExamSheet();
@@ -284,6 +318,9 @@ window.GeneratorModule = {
       container.appendChild(secWrapper);
     });
 
+    // College template: logo, copied header lines, meta rows, fonts (no-op for built-in templates)
+    if (window.TemplateStyle) window.TemplateStyle.applyToSheet(paper);
+
     // Render Dedicated Section: Question-to-CO Fulfillment & Mapping Matrix
     let coMatrixTarget = document.getElementById("exam-co-matrix-target");
     if (!coMatrixTarget) {
@@ -298,7 +335,7 @@ window.GeneratorModule = {
       const matrixRows = coMatrix.map(m => `
         <tr>
           <td style="text-align:center; font-weight:bold; padding:6px; border:1px solid #CBD5E1;">${m.display_num}</td>
-          <td style="padding:6px; border:1px solid #CBD5E1; font-size:11px;">${m.question_text.slice(0, 110)}...</td>
+          <td style="padding:6px; border:1px solid #CBD5E1; font-size:11px;">${window.escapeHtml(m.question_text.slice(0, 110))}...</td>
           <td style="text-align:center; font-weight:bold; padding:6px; border:1px solid #CBD5E1;">${m.marks}M</td>
           <td style="text-align:center; padding:6px; border:1px solid #CBD5E1;"><span class="bloom-badge badge-${(m.bloom_level || 'l2').toLowerCase()}">${m.bloom_level}</span></td>
           <td style="text-align:center; font-weight:700; color:#1D4ED8; padding:6px; border:1px solid #CBD5E1;">${m.aicte_verb || 'Explain'}</td>
@@ -403,9 +440,9 @@ window.GeneratorModule = {
 
     item.innerHTML = `
       <div class="question-main">
-        <div class="question-num">${q.display_num}.</div>
+        <div class="question-num">${/^[A-Za-z ]*\d+$/.test(q.display_num || "") ? q.display_num + "." : q.display_num}</div>
         <div class="question-text-content" id="q-text-${q.slot_id}">
-          <div>${q.question_text}</div>
+          <div>${window.escapeHtml(q.question_text)}</div>
           ${figureHtml}
         </div>
       </div>
@@ -434,17 +471,24 @@ window.GeneratorModule = {
   async regenerateSingleQuestion(slotId) {
     const paper = window.AppState.currentPaper;
     if (!paper) return;
+    this.linkPaperQuestions(paper);
 
     let targetQ = (paper.all_questions || []).find(q => q.slot_id === slotId);
-    if (!targetQ) return;
+    if (!targetQ) {
+      showToast("Could not find that question in the current paper.", "error");
+      return;
+    }
 
     const row = document.getElementById(`q-row-${slotId}`);
     if (row) row.style.opacity = "0.4";
 
     try {
+      // never repeat this question or any other question already on the paper
+      const excludeTexts = (paper.all_questions || []).map(q => q.question_text).filter(Boolean);
+
       const res = await fetch(`${API_BASE}/api/paper/regenerate-question`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: window.authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           slot: {
             slot_id: targetQ.slot_id,
@@ -455,24 +499,36 @@ window.GeneratorModule = {
             unit_num: targetQ.unit_num,
             unit_title: targetQ.unit_title,
             co: targetQ.co,
-            co_description: targetQ.co_description
+            co_description: targetQ.co_description,
+            po: targetQ.po,
+            pi_code: targetQ.pi_code,
+            is_choice: targetQ.is_choice
           },
           api_config: window.AppState.apiConfig,
           diagram_mode: window.AppState.diagramMode || "auto",
-          exclude_texts: [targetQ.question_text]
+          exclude_texts: excludeTexts
         })
       });
 
-      const data = await res.json();
-      if (data.success && data.question) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success && data.question) {
         targetQ.question_text = data.question.question_text;
         targetQ.marking_scheme = data.question.marking_scheme;
         targetQ.aicte_verb = data.question.aicte_verb;
-        targetQ.figure = data.question.figure;
+        targetQ.bloom_verb = data.question.bloom_verb || data.question.aicte_verb;
+        targetQ.figure = data.question.figure || null;
+
+        const match = (paper.co_fulfillment_matrix || []).find(m => m.slot_id === slotId);
+        if (match) {
+          match.question_text = targetQ.question_text;
+          match.aicte_verb = targetQ.aicte_verb;
+        }
 
         // Re-render paper to update matrix & question text
         this.renderPaper(paper);
         showToast(`Regenerated ${targetQ.display_num} with AICTE verb '${data.question.aicte_verb}'.`, "success");
+      } else {
+        showToast(data.error || `Could not regenerate ${targetQ.display_num} (server error ${res.status}). Please try again.`, "error");
       }
     } catch (err) {
       console.error(err);
@@ -496,7 +552,7 @@ window.GeneratorModule = {
       showToast(`Synthesizing dynamic diagram for Question ${targetQ.display_num}...`, "info");
       const res = await fetch(`${API_BASE}/api/diagram/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: window.authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           topic: targetQ.topic,
           question_text: targetQ.question_text,

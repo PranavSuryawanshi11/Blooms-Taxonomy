@@ -1,5 +1,13 @@
 # Changelog
 
+## v5.0.0
+- Added: **Add Your College Template** - upload an old question paper (PDF / Word / scan) and BloomCraft copies the header lines with their styles, the logo(s), the course/time/marks rows, instructions, sections, OR structure and numbering format. Templates are stored per user in PostgreSQL and used by the on-screen paper and the Word export.
+- Added: sub-question numbering Q.1 (a)(b)(c), manual OR questions with their own marks, unit-wise marks weightage and Bloom levels, question-set upload with derived unit / CO / PO and a Generate Question Paper button.
+- Added: Continue as Guest (1 paper per device). Removed the demo accounts and demo buttons.
+- Changed: all storage moved to PostgreSQL. Argon2id password hashing, hashed 90-day sliding sessions, login lockout, recovery-code password reset.
+- Security: removed the unauthenticated project download endpoint; account/template/question-set/LLM endpoints now require sign-in.
+
+
 All notable changes to **BloomCraft AI** will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

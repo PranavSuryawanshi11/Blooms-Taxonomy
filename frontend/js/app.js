@@ -17,6 +17,62 @@ const resolveApiBase = () => {
 window.API_BASE = resolveApiBase();
 const API_BASE = window.API_BASE;
 
+// Stable per-browser device id (used for the one-paper guest limit)
+window.getDeviceId = function () {
+  try {
+    let id = localStorage.getItem("bloom_device_id");
+    if (!id || id.length < 16) {
+      const rnd = (window.crypto && crypto.getRandomValues)
+        ? Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, "0")).join("")
+        : (Math.random().toString(16).slice(2) + Date.now().toString(16)).padEnd(32, "0");
+      id = "dev-" + rnd;
+      localStorage.setItem("bloom_device_id", id);
+    }
+    return id;
+  } catch (e) {
+    return "dev-session-" + (window.__fallbackDevice = window.__fallbackDevice || Math.random().toString(16).slice(2).padEnd(24, "0"));
+  }
+};
+
+// Headers for authenticated API calls
+window.authHeaders = function (extra) {
+  const h = Object.assign({}, extra || {});
+  const token = (window.AuthModule && window.AuthModule.authToken) || (window.AppState && window.AppState.authToken);
+  if (token) h["Authorization"] = `Bearer ${token}`;
+  h["X-Device-Id"] = window.getDeviceId();
+  return h;
+};
+
+// Escape text before inserting into innerHTML
+window.escapeHtml = function (v) {
+  return String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+};
+
+// Make every section carry explicit per-question marks / OR flags / OR marks so the UI can edit them
+window.normalizeSections = function (sections) {
+  (sections || []).forEach(sec => {
+    const n = Math.max(1, parseInt(sec.question_count) || 1);
+    const dflt = parseInt(sec.marks_per_question) || 2;
+    const marks = [];
+    for (let i = 0; i < n; i++) {
+      const v = Array.isArray(sec.question_marks) ? parseInt(sec.question_marks[i]) : NaN;
+      marks.push(v > 0 ? v : dflt);
+    }
+    sec.question_count = n;
+    sec.question_marks = marks;
+    sec.question_choices = marks.map((m, i) => {
+      if (Array.isArray(sec.question_choices) && i < sec.question_choices.length) return !!sec.question_choices[i];
+      return !!sec.has_internal_choice && m >= 5;
+    });
+    sec.or_marks = marks.map((m, i) => {
+      const v = Array.isArray(sec.or_marks) ? parseInt(sec.or_marks[i]) : NaN;
+      return v > 0 ? v : m;
+    });
+    sec.total_section_marks = marks.reduce((a, b) => a + b, 0);
+  });
+  return sections;
+};
+
 // Global Application State
 window.AppState = {
   currentTab: 'syllabus',
@@ -42,7 +98,7 @@ window.AppState = {
     institution_name: "DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING",
     department_name: "",
     exam_title: "SEMESTER END EXAMINATION",
-    academic_session: "Academic Year 2026-2027",
+    academic_session: "",
     degree_branch: "B.Tech (CSE) Semester V",
     regulation: "R20 / CBCS",
     roll_box_label: "Roll No / USN:",
@@ -67,6 +123,11 @@ window.AppState = {
   },
   currentPaper: null,
   currentUser: null,
+  numberingStyle: "sub",
+  uploadedSet: null,          // parsed result of an uploaded question set (units / CO / PO / questions)
+  useUploadedSet: false,
+  unitPlan: { enabled: true, units: [] },
+  guestQuota: null,
   diagramMode: localStorage.getItem("bloom_diagram_mode") || "auto",
   apiConfig: {
     groq_key: localStorage.getItem("bloom_groq_key") || "",
@@ -80,6 +141,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initTabs();
   initModals();
   initCustomLayoutModal();
+  initAcademicYearAndCourseFields();
   if (window.AuthModule && window.AuthModule.init) {
     await window.AuthModule.init();
   }
@@ -137,7 +199,7 @@ window.switchTab = switchTab;
 // Preset Loader
 async function loadPresets() {
   try {
-    const res = await fetch(`${API_BASE}/api/blueprint/presets`);
+    const res = await fetch(`${API_BASE}/api/blueprint/presets`, { headers: window.authHeaders() });
     const data = await res.json();
     if (data.success) {
       window.AppState.bloomLevels = data.bloom_levels;
@@ -154,9 +216,11 @@ async function loadPresets() {
         window.AppState.currentBlueprintConfig.duration = defaultTmpl.duration;
         window.AppState.currentBlueprintConfig.exam_title = defaultTmpl.name;
         window.AppState.currentBlueprintConfig.instructions = defaultTmpl.instructions || [];
-        window.AppState.currentBlueprintConfig.sections = JSON.parse(
+        window.AppState.currentBlueprintConfig.sections = window.normalizeSections(JSON.parse(
           JSON.stringify(defaultTmpl.sections)
-        );
+        ));
+        window.AppState.numberingStyle = defaultTmpl.numbering_style || "sequential";
+        window.AppState.numberingFormat = defaultTmpl.numbering_format || null;
         if (defaultTmpl.college_profile) {
           window.AppState.customLayout.college_profile = defaultTmpl.college_profile;
           if (defaultTmpl.college_profile.institution_name) {
@@ -204,7 +268,8 @@ function showToast(message, type = "info") {
     iconSvg = '<svg class="icon-svg icon-sm" style="color:var(--primary-color)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
   }
 
-  toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+  toast.innerHTML = `${iconSvg} <span></span>`;
+  toast.querySelector("span").textContent = message;
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -248,7 +313,6 @@ function initCustomLayoutModal() {
       document.getElementById("layout-inst-name").value = layout.institution_name || "";
       document.getElementById("layout-dept-name").value = layout.department_name || "";
       document.getElementById("layout-exam-title").value = layout.exam_title || "";
-      document.getElementById("layout-academic-session").value = layout.academic_session || "";
       document.getElementById("layout-degree-branch").value = layout.degree_branch || "";
       document.getElementById("layout-regulation").value = layout.regulation || "";
       document.getElementById("layout-roll-label").value = layout.roll_box_label || "Roll No / USN:";
@@ -312,7 +376,7 @@ function initCustomLayoutModal() {
       layout.institution_name = document.getElementById("layout-inst-name").value.trim() || "EXAMINATION BOARD";
       layout.department_name = document.getElementById("layout-dept-name").value.trim();
       layout.exam_title = document.getElementById("layout-exam-title").value.trim() || "SEMESTER EXAMINATION";
-      layout.academic_session = document.getElementById("layout-academic-session").value.trim();
+      window.syncAcademicYear();
       layout.degree_branch = document.getElementById("layout-degree-branch").value.trim();
       layout.regulation = document.getElementById("layout-regulation").value.trim();
       layout.roll_box_label = document.getElementById("layout-roll-label").value.trim() || "Roll No / USN:";
@@ -433,3 +497,124 @@ function applyLayoutToExamSheet() {
 window.showToast = showToast;
 window.switchTab = switchTab;
 window.applyLayoutToExamSheet = applyLayoutToExamSheet;
+
+
+// ---------------------------------------------------------------------------
+// Academic Year (A.Y.) - one field drives every place the year is printed
+// ---------------------------------------------------------------------------
+window.AY_RE = /\b20\d\d\s*[-\u2013\u2014\/]\s*(?:20)?\d\d\b/;
+
+// Indian academic years start around June: Nov 2026 -> "2026-2027", Mar 2027 -> "2026-2027"
+window.defaultAcademicYear = function () {
+  const d = new Date();
+  const start = d.getMonth() >= 5 ? d.getFullYear() : d.getFullYear() - 1;
+  return `${start}-${start + 1}`;
+};
+
+window.getAcademicYear = function () {
+  const el = document.getElementById("academic-year");
+  return ((el && el.value) || "").replace(/\s+/g, " ").trim();
+};
+
+// Replace a year range in `text`; with append=true add "(A.Y.: ..)" when the text has none
+window.withAcademicYear = function (text, ay, append) {
+  if (!ay) return text || "";
+  text = text || "";
+  if (window.AY_RE.test(text)) return text.replace(new RegExp(window.AY_RE.source, "g"), () => ay);
+  return append ? `${text} (A.Y.: ${ay})`.trim() : text;
+};
+
+// Keep the layout's session line in step with the A.Y. field
+window.getYearSemester = function () {
+  const el = document.getElementById("year-semester");
+  return ((el && el.value) || "").replace(/\s+/g, " ").trim();
+};
+
+window.syncAcademicYear = function () {
+  const ay = window.getAcademicYear();
+  const ys = window.getYearSemester();
+  window.AppState.academicYear = ay;
+  window.AppState.customLayout.academic_session = [ys, ay ? `Academic Year ${ay}` : ""].filter(Boolean).join(" | ");
+};
+
+// Stamp the A.Y. on an already generated paper (live edits, print and Word export read this copy)
+window.applyAcademicYearToPaper = function (paper) {
+  const ay = window.getAcademicYear();
+  const ys = window.getYearSemester();
+  if (!paper || (!ay && !ys)) return;
+  paper.academic_year = ay;
+  paper.year_semester = ys;
+  if (paper.college_profile) {
+    paper.college_profile = Object.assign({}, paper.college_profile);
+    if (ys) {
+      paper.college_profile.year_semester = ay ? `${ys} (A.Y.: ${ay})` : ys;
+    } else if (ay) {
+      paper.college_profile.year_semester = window.withAcademicYear(paper.college_profile.year_semester, ay, true);
+    }
+    if (ay && paper.college_profile.exam_title) {
+      paper.college_profile.exam_title = window.withAcademicYear(paper.college_profile.exam_title, ay, false);
+    }
+  }
+  if (ay && paper.exam_title) paper.exam_title = window.withAcademicYear(paper.exam_title, ay, false);
+  // Custom / imported college templates draw their header from plain text lines: stamp those too
+  if (paper.template_style && Array.isArray(paper.template_style.header_lines) && paper.template_style.header_lines.length) {
+    const ts = Object.assign({}, paper.template_style);
+    ts.header_lines = ts.header_lines.map((h) => Object.assign({}, h));
+    const ysText = ys ? (ay ? `${ys} (A.Y.: ${ay})` : ys) : "";
+    let foundYs = false;
+    ts.header_lines.forEach((h) => {
+      if (h.role === "year_semester") {
+        foundYs = true;
+        if (ysText) h.text = ysText;
+        else if (ay) h.text = window.withAcademicYear(h.text, ay, true);
+      } else if (h.role === "exam_title" && ay) {
+        h.text = window.withAcademicYear(h.text, ay, false);
+      }
+    });
+    if (!foundYs && (ysText || ay)) {
+      ts.header_lines.push({ text: ysText || `A.Y.: ${ay}`, role: "year_semester", size: 10.5, bold: false, italic: false,
+        uppercase: false, align: "center", color: null });
+    }
+    paper.template_style = ts;
+  }
+  paper.custom_layout = Object.assign({}, paper.custom_layout || {}, {
+    academic_session: [ys, ay ? `Academic Year ${ay}` : ""].filter(Boolean).join(" | ")
+  });
+};
+
+function initAcademicYearAndCourseFields() {
+  const ayEl = document.getElementById("academic-year");
+  const ysEl = document.getElementById("year-semester");
+  if (ayEl) {
+    if (!ayEl.value.trim()) ayEl.value = window.defaultAcademicYear();
+    window.syncAcademicYear();
+    const onHeaderChange = () => {
+      window.syncAcademicYear();
+      const paper = window.AppState.currentPaper;
+      if (paper) {
+        window.applyAcademicYearToPaper(paper);
+        if (window.GeneratorModule && window.GeneratorModule.renderPaper) window.GeneratorModule.renderPaper(paper);
+      } else if (typeof applyLayoutToExamSheet === "function") {
+        applyLayoutToExamSheet();
+      }
+    };
+    ayEl.addEventListener("input", onHeaderChange);
+    if (ysEl) ysEl.addEventListener("input", onHeaderChange);
+  }
+
+  // Course code / title typed after a paper exists must reach the paper, its preview, print and export
+  const refreshCourse = () => {
+    const paper = window.AppState.currentPaper;
+    if (!paper) return;
+    const code = (document.getElementById("course-code")?.value || "").trim();
+    const name = (document.getElementById("course-name")?.value || "").trim();
+    if (code) paper.course_code = code;
+    if (name) paper.course_name = name;
+    const courseEl = document.getElementById("exam-render-course");
+    if (courseEl) courseEl.innerText = `${paper.course_code}: ${paper.course_name}`;
+  };
+  ["course-code", "course-name"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", refreshCourse);
+  });
+}

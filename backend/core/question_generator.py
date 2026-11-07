@@ -62,13 +62,28 @@ def generate_paper_from_blueprint(
                         "co": q_item.get("co", "CO1"),
                         "topic": q_item.get("topic", "Subject Core"),
                         "figure": q_item.get("figure"),
+                        "unit_num": q_item.get("unit_num"),
+                        "unit_title": q_item.get("unit_title"),
+                        "po": q_item.get("po"),
+                        "co_description": q_item.get("co_description"),
                         "is_used": False
                     })
 
     # Helper to pick from user sets pool
-    def _pick_from_user_pool(slot_marks: int, slot_lvl: str, slot_co: str) -> Optional[Dict[str, Any]]:
+    def _pick_from_user_pool(slot_marks: int, slot_lvl: str, slot_co: str, slot_unit=None) -> Optional[Dict[str, Any]]:
         if not user_question_pool:
             return None
+        # Priority 0 (uploaded question sets only): same unit as the slot, then same marks (+ level)
+        if slot_unit is not None:
+            for item in user_question_pool:
+                if (not item["is_used"] and item.get("unit_num") == slot_unit
+                        and item["marks"] == slot_marks and item["bloom_level"] == slot_lvl):
+                    item["is_used"] = True
+                    return item
+            for item in user_question_pool:
+                if not item["is_used"] and item.get("unit_num") == slot_unit and item["marks"] == slot_marks:
+                    item["is_used"] = True
+                    return item
         # Priority 1: exact marks and bloom level match
         for item in user_question_pool:
             if not item["is_used"] and item["marks"] == slot_marks and item["bloom_level"] == slot_lvl:
@@ -90,7 +105,7 @@ def generate_paper_from_blueprint(
         sec_questions = []
         for slot in sec.get("slots", []):
             user_q_candidate = _pick_from_user_pool(
-                slot.get("marks", 5), slot.get("bloom_level", "L2"), slot.get("co", "CO1")
+                slot.get("marks", 5), slot.get("bloom_level", "L2"), slot.get("co", "CO1"), slot.get("unit_num")
             )
             if user_q_candidate:
                 q = _adapt_user_question_to_slot(user_q_candidate, slot, api_config=api_config)
@@ -106,7 +121,8 @@ def generate_paper_from_blueprint(
                 user_or_candidate = _pick_from_user_pool(
                     or_slot.get("marks", slot.get("marks", 5)),
                     or_slot.get("bloom_level", slot.get("bloom_level", "L2")),
-                    or_slot.get("co", slot.get("co", "CO1"))
+                    or_slot.get("co", slot.get("co", "CO1")),
+                    or_slot.get("unit_num", slot.get("unit_num"))
                 )
                 if user_or_candidate:
                     or_q = _adapt_user_question_to_slot(user_or_candidate, or_slot, api_config=api_config)
@@ -218,12 +234,12 @@ def _adapt_user_question_to_slot(user_q: Dict[str, Any], slot: Dict[str, Any],
         "bloom_verb": verb,
         "aicte_verb": verb,
         "marks": marks,
-        "unit_num": slot.get("unit_num", 1),
-        "unit_title": slot.get("unit_title", ""),
+        "unit_num": user_q.get("unit_num") or slot.get("unit_num", 1),
+        "unit_title": user_q.get("unit_title") or slot.get("unit_title", ""),
         "topic": topic,
         "co": user_q.get("co") or slot.get("co", "CO1"),
-        "co_description": slot.get("co_description", ""),
-        "po": slot.get("po", "PO1"),
+        "co_description": user_q.get("co_description") or slot.get("co_description", ""),
+        "po": user_q.get("po") or slot.get("po", "PO1"),
         "pi_code": slot.get("pi_code", "1.1"),
         "is_choice": slot.get("is_choice", False),
         "marking_scheme": marking_guide,

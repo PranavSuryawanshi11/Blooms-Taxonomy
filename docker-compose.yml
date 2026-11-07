@@ -1,0 +1,35 @@
+# BloomCraft AI + PostgreSQL. Data lives in the named volume `bloom_pgdata`, so logins and papers
+# survive restarts and upgrades.   Start:  POSTGRES_PASSWORD=choose-a-strong-one docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bloom
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD to a strong password}
+      POSTGRES_DB: bloomcraft
+    volumes:
+      - bloom_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloom -d bloomcraft"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://bloom:${POSTGRES_PASSWORD}@db:5432/bloomcraft
+      PORT: "5000"
+    env_file:
+      - path: backend/.env
+        required: false
+    ports:
+      - "5000:5000"
+
+volumes:
+  bloom_pgdata:

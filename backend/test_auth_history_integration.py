@@ -85,30 +85,34 @@ def test_unauthenticated_access_blocked():
         print("  -> Unauthenticated access to /api/history successfully blocked with HTTP 401.")
 
 
+def _register(prefix):
+    import uuid
+    payload = {"username": f"{prefix}_{uuid.uuid4().hex[:6]}", "display_name": prefix.title(),
+               "department": "CSE", "password": "Str0ngPass!99"}
+    res = _request("/api/auth/register", method="POST", data=payload, headers={"Content-Type": "application/json"})
+    return json.loads(res.read().decode("utf-8")), payload
+
+
 def test_faculty_login_and_token():
-    print("[TEST 3] Testing Faculty Login & Token Generation...")
-    payload = {"username": "prof.turing", "password": "password123"}
-    res = _request("/api/auth/login", method="POST", data=payload, headers={"Content-Type": "application/json"})
+    print("[TEST 3] Testing Faculty Registration, Login & Token Generation...")
+    reg, payload = _register("turing")
+    assert reg["success"] is True and reg.get("recovery_code")
+    res = _request("/api/auth/login", method="POST",
+                   data={"username": payload["username"], "password": payload["password"]},
+                   headers={"Content-Type": "application/json"})
     data = json.loads(res.read().decode("utf-8"))
     assert data["success"] is True
-    assert "token" in data and data["token"].startswith("tok_")
-    assert data["user"]["username"] == "prof.turing"
+    assert "token" in data and len(data["token"]) >= 40
+    assert data["user"]["username"] == payload["username"]
     print(f"  -> Login success: {data['user']['display_name']} [Token: {data['token'][:12]}...]")
     return data["user"], data["token"]
 
 
 def test_strict_isolation_between_faculty():
     print("[TEST 4] Testing Strict Multi-Faculty Isolation & Privacy...")
-    # Faculty A (Turing)
-    turing_payload = {"username": "prof.turing", "password": "password123"}
-    res = _request("/api/auth/login", method="POST", data=turing_payload, headers={"Content-Type": "application/json"})
-    data_a = json.loads(res.read().decode("utf-8"))
+    data_a, _ = _register("turing")
+    data_b, _ = _register("hopper")
     token_a = data_a["token"]
-
-    # Faculty B (Hopper)
-    hopper_payload = {"username": "dr.hopper", "password": "password123"}
-    res = _request("/api/auth/login", method="POST", data=hopper_payload, headers={"Content-Type": "application/json"})
-    data_b = json.loads(res.read().decode("utf-8"))
     token_b = data_b["token"]
 
     assert token_a != token_b, "Tokens must be unique per session"

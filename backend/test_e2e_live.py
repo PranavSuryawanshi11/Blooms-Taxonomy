@@ -48,8 +48,9 @@ def test_static_assets():
 
 def test_auth_and_presets():
     print("\n--- 2. Testing Faculty Authentication & Presets ---")
-    login_data = json.dumps({"username": "prof.turing", "password": "password123"}).encode('utf-8')
-    req = urllib.request.Request(f"{BASE_URL}/api/auth/login", data=login_data, headers={"Content-Type": "application/json"})
+    import uuid
+    login_data = json.dumps({"username": "e2e_" + uuid.uuid4().hex[:8], "display_name": "E2E Faculty", "department": "CSE", "password": "Str0ngPass!E2E"}).encode('utf-8')
+    req = urllib.request.Request(f"{BASE_URL}/api/auth/register", data=login_data, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req) as resp:
         data = json.loads(resp.read().decode('utf-8'))
         assert data.get("success") is True

@@ -68,7 +68,7 @@
         <form id="form-faculty-login" class="auth-form active">
           <div class="form-group">
             <label class="form-label" for="login-username">Faculty Username / ID</label>
-            <input type="text" id="login-username" class="form-input" placeholder="Enter your username (e.g. prof.turing)" required autocomplete="username">
+            <input type="text" id="login-username" class="form-input" placeholder="Enter your username" required autocomplete="username">
           </div>
 
           <div class="form-group">
@@ -79,7 +79,7 @@
               </button>
             </div>
             <div class="input-with-action">
-              <input type="password" id="login-password" class="form-input" placeholder="Enter your faculty password" required autocomplete="current-password">
+              <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
               <button type="button" class="btn-toggle-pwd" id="btn-toggle-login-pwd" title="Toggle password visibility">
                 <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -100,33 +100,27 @@
             <span>Sign In to Examination Workspace</span>
           </button>
 
-          <div style="margin-top: 14px; padding: 10px 12px; background: rgba(59, 130, 246, 0.06); border: 1px dashed rgba(59, 130, 246, 0.35); border-radius: 8px; font-size: 12px;">
-            <div style="font-weight: 600; color: var(--primary-color, #1D4ED8); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-              <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>Instant Demo Faculty Sign-In (Click to Login)</span>
-            </div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button type="button" class="btn-demo-quick-login" data-user="prof.turing" data-pwd="password123" style="background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #1e293b; font-weight: 600; transition: all 0.15s ease;">
-                Prof. Turing
-              </button>
-              <button type="button" class="btn-demo-quick-login" data-user="dr.hopper" data-pwd="password123" style="background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #1e293b; font-weight: 600; transition: all 0.15s ease;">
-                Dr. Hopper
-              </button>
-              <button type="button" class="btn-demo-quick-login" data-user="pranav11" data-pwd="password123" style="background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #1e293b; font-weight: 600; transition: all 0.15s ease;">
-                Faculty Pranav (pranav11)
-              </button>
-            </div>
-          </div>
+          <div class="auth-divider"><span>or</span></div>
+
+          <button type="button" class="btn btn-secondary btn-block" id="btn-guest-login">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Continue as Guest</span>
+          </button>
+          <p class="guest-note">Guest access lets you generate <strong>1 question paper per device</strong>. Create a faculty account for unlimited papers and a saved archive.</p>
         </form>
 
         <!-- FORM 3: FORGOT PASSWORD -->
         <form id="form-faculty-forgot" class="auth-form" style="display: none;">
           <div style="margin-bottom: 14px; color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
-            Reset your faculty password by entering your Username or ID and setting a new password.
+            Enter your username and the recovery code shown when you registered, then choose a new password.
           </div>
           <div class="form-group">
             <label class="form-label" for="forgot-username">Faculty Username / ID</label>
-            <input type="text" id="forgot-username" class="form-input" placeholder="e.g. Pranav or prof.turing" required autocomplete="username">
+            <input type="text" id="forgot-username" class="form-input" placeholder="Your username" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="forgot-recovery-code">Recovery Code</label>
+            <input type="text" id="forgot-recovery-code" class="form-input mono-input" placeholder="XXXX-XXXX-XXXX-XXXX" required autocomplete="off" spellcheck="false">
           </div>
 
           <div class="grid-2">
@@ -165,13 +159,13 @@
         <form id="form-faculty-signup" class="auth-form" style="display: none;">
           <div class="form-group">
             <label class="form-label" for="signup-fullname">Full Name & Academic Title</label>
-            <input type="text" id="signup-fullname" class="form-input" placeholder="e.g. Prof. Alan Turing" required>
+            <input type="text" id="signup-fullname" class="form-input" placeholder="e.g. Prof. A. Sharma" required>
           </div>
 
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label" for="signup-username">Username</label>
-              <input type="text" id="signup-username" class="form-input" placeholder="e.g. prof.turing" required autocomplete="username">
+              <input type="text" id="signup-username" class="form-input" placeholder="e.g. prof.sharma" required autocomplete="username">
             </div>
             <div class="form-group">
               <label class="form-label" for="signup-dept">Academic Department</label>
@@ -182,7 +176,9 @@
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label" for="signup-password">Password</label>
-              <input type="password" id="signup-password" class="form-input" placeholder="Create password" required autocomplete="new-password">
+              <input type="password" id="signup-password" class="form-input" placeholder="Min 8 chars, letters + numbers" required autocomplete="new-password">
+              <div class="pwd-meter" aria-hidden="true"><span id="pwd-meter-bar"></span></div>
+              <div class="pwd-hint" id="pwd-meter-text">Use at least 8 characters with letters and numbers.</div>
             </div>
             <div class="form-group">
               <label class="form-label" for="signup-confirm-pwd">Confirm Password</label>
@@ -362,6 +358,20 @@
                 placeholder="e.g. Database Management Systems">
             </div>
 
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="academic-year">Academic Year (A.Y.)</label>
+                <input type="text" id="academic-year" class="form-input" value="" placeholder="e.g. 2026-2027">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="year-semester">Year / Semester</label>
+                <input type="text" id="year-semester" class="form-input" value="" placeholder="e.g. Year: III / Semester V">
+              </div>
+            </div>
+            <div class="form-hint" style="font-size:11px; opacity:.7; margin:-6px 0 10px;">
+              Set once here. Printed on the paper header, print and Word export, and the paper updates live. Leave Year / Semester empty to keep the template's wording.
+            </div>
+
             <div class="form-group">
               <label class="form-label" for="syllabus-text-input">Or Paste Curriculum Text Manually</label>
               <textarea id="syllabus-text-input" class="form-textarea"
@@ -530,6 +540,21 @@
           </div>
         </div>
 
+        <!-- College template actions -->
+        <div class="tpl-actions">
+          <button class="btn btn-outline btn-sm" id="btn-add-college-template" type="button">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Add Your College Template</span>
+          </button>
+          <button class="btn btn-outline btn-sm" id="btn-create-custom-template" type="button">
+            <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>Custom Template</span>
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btn-edit-template" type="button" style="display:none;">Edit this template</button>
+          <button class="btn btn-ghost btn-sm" id="btn-delete-template" type="button" style="display:none;">Delete this template</button>
+          <span class="tpl-actions-hint">Custom Template: type your college name, header and question structure yourself. Or upload an old paper and BloomCraft copies its header, logo and layout.</span>
+        </div>
+
         <!-- Template & Exam Metadata Grid -->
         <div class="grid-4" style="margin-bottom: 16px;">
           <div class="form-group">
@@ -567,8 +592,47 @@
           </div>
         </div>
 
+        <!-- Question numbering style -->
+        <div class="scheme-box numbering-box">
+          <div>
+            <label class="form-label" for="select-numbering-style" style="margin-bottom: 4px; font-weight: 700;">Question Numbering</label>
+            <select id="select-numbering-style" class="form-select" style="min-width: 300px;">
+              <option value="sub">Q.1 (a), (b), (c) - each section is one question with sub-questions</option>
+              <option value="sequential">Q1, Q2, Q3 - sequential numbering</option>
+            </select>
+          </div>
+          <div class="numbering-help">Edit marks of every sub-question below, tick <strong>Add OR</strong> on the questions that should have an alternative, and type the OR question's own marks.</div>
+        </div>
+
+        <!-- Upload a question set -->
+        <div class="scheme-box qset-box" id="qset-upload-card">
+          <div class="qset-head">
+            <div>
+              <strong>Upload Question Set</strong>
+              <span class="badge qset-active-badge" id="qset-active-badge" style="display:none;">In use</span>
+              <div class="qset-sub">Upload a question paper or question bank. Unit names, Course Outcomes (CO) and Program Outcomes (PO) are generated from your questions.</div>
+            </div>
+          </div>
+          <div class="dropzone qset-dropzone" id="qset-dropzone" role="button" tabindex="0" aria-label="Upload question set">
+            <svg class="icon-svg" style="width:28px; height:28px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div>
+              <div class="dropzone-text">Click or drag &amp; drop your question set</div>
+              <div class="qset-status" id="qset-upload-status">PDF, DOCX, TXT, MD, CSV or JSON (max 5 MB)</div>
+            </div>
+            <input type="file" id="qset-file-input" accept=".pdf,.docx,.txt,.md,.csv,.json" style="display:none;">
+          </div>
+          <div id="qset-result" style="display:none;"></div>
+          <div class="qset-generate-bar" id="qset-generate-bar" style="display:none;">
+            <button class="btn btn-outline btn-sm" id="btn-qset-remove" type="button">Remove uploaded set</button>
+            <button class="btn btn-primary btn-lg" id="btn-qset-generate" type="button">
+              <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Generate Question Paper</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Question Synthesis Engine & Custom Question Sets Bar -->
-        <div class="scheme-box" style="margin-bottom: 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 12px 16px;">
+        <div class="scheme-box" style="margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
               <div>
@@ -586,7 +650,7 @@
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
                   <span>Manage Question Sets (Add Your Questions)</span>
-                  <span class="badge" id="bank-total-badge" style="background: rgba(59, 130, 246, 0.2); color: #60A5FA; margin-left: 6px;">4 Sets (16 Qs)</span>
+                  <span class="badge" id="bank-total-badge" style="background: rgba(37, 99, 235, 0.12); color: var(--primary-color); margin-left: 6px;">4 Sets (16 Qs)</span>
                 </button>
               </div>
             </div>
@@ -594,6 +658,22 @@
               Active: Standard AICTE Examination Reform Policy algorithmic & cognitive engine.
             </div>
           </div>
+        </div>
+
+        <!-- Unit-wise marks weightage and Bloom levels -->
+        <div class="scheme-box planner-box" id="unit-planner-card">
+          <div class="planner-head">
+            <div>
+              <strong>Unit-wise Marks Weightage &amp; Bloom Levels</strong>
+              <div class="qset-sub">Decide how many marks each unit carries and which Bloom levels its questions may use. Leave all levels unticked for no restriction.</div>
+            </div>
+            <div class="planner-actions">
+              <label class="q-or-toggle"><input type="checkbox" id="unit-plan-enable" checked><span>Use unit weightage</span></label>
+              <button class="btn btn-outline btn-sm" id="btn-unit-plan-even" type="button">Distribute evenly</button>
+              <button class="btn btn-outline btn-sm" id="btn-unit-plan-clear-levels" type="button">Clear levels</button>
+            </div>
+          </div>
+          <div id="unit-planner-body"></div>
         </div>
 
         <div class="grid-2">
@@ -978,9 +1058,10 @@
                   placeholder="e.g. B.Tech End-Semester Examination">
               </div>
               <div class="form-group">
-                <label class="form-label" for="layout-academic-session">Academic Session / Year</label>
-                <input type="text" id="layout-academic-session" class="form-input"
-                  placeholder="e.g. Academic Year 2026-2027">
+                <label class="form-label">Academic Year (A.Y.)</label>
+                <div class="form-hint" style="font-size:12px; opacity:.75; padding-top:8px;">
+                  Edit the A.Y. in the Course Metadata section of the Syllabus tab.
+                </div>
               </div>
             </div>
 
@@ -1139,7 +1220,7 @@
             </span>
           </div>
 
-          <div id="edit-figure-controls-panel" style="display: none; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;">
+          <div id="edit-figure-controls-panel" style="display: none; background: #F8FAFC; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;">
             <div class="grid-2" style="margin-bottom: 12px; gap: 12px;">
               <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label" for="edit-figure-type">Diagram Archetype</label>
@@ -1380,7 +1461,7 @@
         </div>
 
         <!-- Add Question to Active Set Form -->
-        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px;">
+        <div style="background: #F8FAFC; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px;">
           <div style="font-weight: 700; font-size: 13px; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
             <svg class="icon-svg icon-xs" viewBox="0 0 24 24">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -1448,14 +1529,150 @@
     </div>
   </div>
 
+  <!-- COLLEGE TEMPLATE IMPORT DIALOG -->
+  <div class="modal-overlay" id="modal-template-import">
+    <div class="modal-dialog modal-dialog-lg tpl-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="tpl-modal-title">Add Your College Template</h3>
+        <button class="btn-icon" type="button" data-close-tpl aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body tpl-body">
+        <div id="tpl-step-upload">
+          <p class="qset-sub" style="margin-bottom:10px;">Upload any <strong>old question paper</strong> from your college. BloomCraft reads its header, logo(s), course/time/marks rows, instructions, sections and question numbering, so new papers look exactly the same.</p>
+          <div class="dropzone qset-dropzone" id="tpl-dropzone" role="button" tabindex="0" aria-label="Upload old question paper">
+            <svg class="icon-svg" style="width:28px; height:28px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div>
+              <div class="dropzone-text">Click or drag &amp; drop an old question paper</div>
+              <div class="qset-status" id="tpl-upload-status">PDF, Word (.docx), or a photo/scan of an old paper (max 8 MB)</div>
+            </div>
+            <input type="file" id="tpl-file-input" accept=".pdf,.docx,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff" style="display:none;">
+          </div>
+          <p class="guest-note" style="text-align:left;">Text PDFs and Word files give the most exact copy. Photos and scans are read with OCR and may need a few corrections in the next step.</p>
+          <div style="text-align:center; margin-top:12px;">
+            <span class="tpl-actions-hint">Don't have an old paper, or the copy is not right?</span>
+            <button class="btn btn-outline btn-sm" id="btn-tpl-manual" type="button">Build the template manually</button>
+          </div>
+        </div>
+
+        <div id="tpl-step-busy" style="display:none;" class="planner-empty">Reading the paper and finding the header, logo and layout...</div>
+
+        <div id="tpl-step-review" style="display:none;">
+          <div class="qset-note" id="tpl-found-summary"></div>
+          <div id="tpl-warnings"></div>
+
+          <h4 class="qset-h">Live preview of the header</h4>
+          <div class="tpl-preview" id="tpl-preview"></div>
+
+          <h4 class="qset-h">College details <span class="th-note">(these lines are printed at the top of every paper; leave a box empty to hide that line)</span></h4>
+          <div class="tpl-grid tpl-grid-2">
+            <div class="form-group"><label class="form-label" for="tpl-f-society">Society / Trust</label><input type="text" id="tpl-f-society" class="form-input" placeholder="e.g. Shirpur Education Society's"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-college">College name *</label><input type="text" id="tpl-f-college" class="form-input" placeholder="e.g. R. C. PATEL INSTITUTE OF TECHNOLOGY, SHIRPUR"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-tagline">Tagline</label><input type="text" id="tpl-f-tagline" class="form-input" placeholder="e.g. An Autonomous Institute"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-affiliation">Affiliation</label><input type="text" id="tpl-f-affiliation" class="form-input" placeholder="e.g. Affiliated to Dr. Babasaheb Ambedkar Technological University"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-regional">Regional language title</label><input type="text" id="tpl-f-regional" class="form-input" placeholder="optional"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-programme">Programme / Department</label><input type="text" id="tpl-f-programme" class="form-input" placeholder="e.g. B.Tech in Computer Science and Engineering"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-exam-title">Examination title</label><input type="text" id="tpl-f-exam-title" class="form-input" placeholder="e.g. END SEMESTER EXAMINATION"></div>
+            <div class="form-group"><label class="form-label" for="tpl-f-year-sem">Year / Semester</label><input type="text" id="tpl-f-year-sem" class="form-input" placeholder="e.g. Year: II / Semester IV"></div>
+          </div>
+          <div class="tpl-actions-hint" style="margin-bottom:8px;">The Academic Year (A.Y.) is set in the Syllabus tab and is added to the Year / Semester line automatically.</div>
+
+          <div class="tpl-grid">
+            <div class="form-group"><label class="form-label" for="tpl-name">Template name</label><input type="text" id="tpl-name" class="form-input"></div>
+            <div class="form-group"><label class="form-label" for="tpl-duration">Duration</label><input type="text" id="tpl-duration" class="form-input"></div>
+            <div class="form-group"><label class="form-label" for="tpl-total-marks">Total marks</label><input type="number" id="tpl-total-marks" class="form-input" min="1" max="500"></div>
+          </div>
+
+          <details class="tpl-advanced">
+            <summary class="qset-h" style="cursor:pointer;">Advanced: header lines <span class="th-note">(font size, bold / italic, alignment, extra lines)</span></summary>
+            <div id="tpl-header-lines"></div>
+            <button class="btn btn-outline btn-sm" id="btn-tpl-add-line" type="button" style="margin-top:6px;">+ Add line</button>
+          </details>
+
+          <h4 class="qset-h">Logos</h4>
+          <div id="tpl-logos"></div>
+          <button class="btn btn-outline btn-sm" id="btn-tpl-add-logo" type="button" style="margin-top:6px;">+ Add logo</button>
+          <input type="file" id="tpl-add-logo-input" accept="image/png,image/jpeg" style="display:none;">
+
+          <h4 class="qset-h">Course / time / marks rows</h4>
+          <div id="tpl-meta"></div>
+
+          <h4 class="qset-h">Instructions <span class="th-note">(one per line)</span></h4>
+          <textarea id="tpl-instructions" class="form-input" rows="4" style="resize:vertical;"></textarea>
+
+          <h4 class="qset-h">Style and numbering</h4>
+          <div class="tpl-grid tpl-grid-5">
+            <div class="form-group"><label class="form-label" for="tpl-font-family">Font</label><select id="tpl-font-family" class="form-select"><option value="serif">Serif (Times)</option><option value="sans">Sans (Arial)</option></select></div>
+            <div class="form-group"><label class="form-label" for="tpl-font-size">Size (pt)</label><input type="number" id="tpl-font-size" class="form-input" min="8" max="16" step="0.5"></div>
+            <div class="form-group"><label class="form-label" for="tpl-header-border">Line under header</label><select id="tpl-header-border" class="form-select"><option value="bottom">Yes</option><option value="none">No</option></select></div>
+            <div class="form-group"><label class="form-label" for="tpl-marks-format">Marks shown as</label><select id="tpl-marks-format" class="form-select"><option value="[N]">[5]</option><option value="(N)">(5)</option><option value="[N Marks]">[5 Marks]</option><option value="(N Marks)">(5 Marks)</option><option value="NM">5M</option></select></div>
+            <div class="form-group"><label class="form-label" for="tpl-numbering-style">Numbering</label><select id="tpl-numbering-style" class="form-select"><option value="sub">Question with sub-parts</option><option value="sequential">Sequential</option></select></div>
+            <div class="form-group"><label class="form-label" for="tpl-num-prefix">Label prefix</label><select id="tpl-num-prefix" class="form-select"><option value="Q.">Q.1</option><option value="Q">Q1</option><option value="Question ">Question 1</option><option value="">1</option></select></div>
+            <div class="form-group"><label class="form-label" for="tpl-num-sub">Sub-question</label><select id="tpl-num-sub" class="form-select"><option value="paren">(a)</option><option value="close">a)</option><option value="dot">a.</option></select></div>
+          </div>
+
+          <h4 class="qset-h">Question structure <span class="th-note">(quick setup, then fine-tune each question below)</span></h4>
+          <div class="tpl-quick">
+            <div class="form-group"><label class="form-label" for="tpl-q-sections">Sections / main questions</label><input type="number" id="tpl-q-sections" class="form-input" min="1" max="12" value="4"></div>
+            <div class="form-group"><label class="form-label" for="tpl-q-per">Questions in each</label><input type="number" id="tpl-q-per" class="form-input" min="1" max="26" value="3"></div>
+            <div class="form-group"><label class="form-label" for="tpl-q-marks">Marks per question</label><input type="number" id="tpl-q-marks" class="form-input" min="1" max="100" value="5"></div>
+            <button class="btn btn-outline btn-sm" id="btn-tpl-quick-apply" type="button">Build structure</button>
+          </div>
+          <div class="tpl-actions-hint" style="margin-bottom:8px;">Building the structure replaces the sections below and sets the total marks. You can then edit marks, add OR choices and choose Bloom levels per section.</div>
+
+          <h4 class="qset-h">Sections and questions</h4>
+          <div id="tpl-sections"></div>
+          <div class="planner-total" id="tpl-marks-note"></div>
+          <button class="btn btn-outline btn-sm" id="btn-tpl-add-section" type="button" style="margin-top:6px;">+ Add section</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" type="button" data-close-tpl>Cancel</button>
+        <button class="btn btn-outline" type="button" id="btn-tpl-reupload" style="display:none;">Upload a different paper</button>
+        <button class="btn btn-primary" type="button" id="btn-tpl-save" style="display:none;">Save &amp; Use Template</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOVERY CODE DIALOG (shown once after registration / password reset) -->
+  <div class="modal-overlay" id="modal-recovery-code">
+    <div class="modal-dialog" style="max-width: 460px;">
+      <div class="modal-header"><h3 class="modal-title">Save your recovery code</h3></div>
+      <div class="modal-body">
+        <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 12px;">This code is the only way to reset your password. It is shown <strong>once</strong>. Write it down or store it in a password manager.</p>
+        <div class="recovery-code-box" id="recovery-code-value">XXXX-XXXX-XXXX-XXXX</div>
+        <label class="q-or-toggle" style="margin-top: 14px;"><input type="checkbox" id="recovery-saved-check"><span>I have saved my recovery code</span></label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btn-copy-recovery" type="button">Copy code</button>
+        <button class="btn btn-primary btn-sm" id="btn-recovery-continue" type="button" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUEST LIMIT DIALOG -->
+  <div class="modal-overlay" id="modal-guest-limit">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header"><h3 class="modal-title">Guest limit reached</h3></div>
+      <div class="modal-body">
+        <p style="font-size:13.5px; color: var(--text-secondary); line-height:1.55;">Guest access includes <strong>1 question paper per device</strong>, and it has been used. Your paper is still available in this session for printing and download. Create a free faculty account to generate more papers and keep an archive.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-close-modal>Close</button>
+        <button class="btn btn-primary" id="btn-guest-to-signup" type="button">Create faculty account</button>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript Modules -->
-  <script src="js/app.js?v=4.0"></script>
-  <script src="js/auth.js?v=4.0"></script>
-  <script src="js/syllabus.js?v=4.0"></script>
-  <script src="js/custom_sets.js?v=4.0"></script>
-  <script src="js/blueprint.js?v=4.0"></script>
-  <script src="js/generator.js?v=4.0"></script>
-  <script src="js/export.js?v=4.0"></script>
+  <script src="js/app.js?v=8.0"></script>
+  <script src="js/auth.js?v=8.0"></script>
+  <script src="js/syllabus.js?v=8.0"></script>
+  <script src="js/custom_sets.js?v=8.0"></script>
+  <script src="js/question_upload.js?v=8.0"></script>
+  <script src="js/template_import.js?v=8.0"></script>
+  <script src="js/blueprint.js?v=8.0"></script>
+  <script src="js/generator.js?v=8.0"></script>
+  <script src="js/export.js?v=8.0"></script>
 </body>
 
 </html>
