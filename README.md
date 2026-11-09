@@ -1,462 +1,212 @@
-# BloomCraft AI &mdash; Cognitive Examination Engineering System
+# BloomCraft AI &mdash; Academic Studio
 
-<p align="center">
-  <a href="https://github.com/PranavSuryawanshi11/Blooms-Taxonomy/actions/workflows/ci.yml" target="_blank">
-    <img src="https://img.shields.io/github/actions/workflow/status/PranavSuryawanshi11/Blooms-Taxonomy/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status">
-  </a>
-  <a href="https://blooms-taxonomy.onrender.com/" target="_blank">
-    <img src="https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo">
-  </a>
-  <a href="https://www.python.org/" target="_blank">
-    <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
-  </a>
-  <a href="https://flask.palletsprojects.com/" target="_blank">
-    <img src="https://img.shields.io/badge/Framework-Flask%203.0%2B-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask 3.0+">
-  </a>
-  <a href="#license-commercial-rights">
-    <img src="https://img.shields.io/badge/License-Non--Commercial%20(No%20Resale)-E11D48?style=for-the-badge" alt="License">
-  </a>
-  <a href="#cognitive-tiers-blooms-taxonomy">
-    <img src="https://img.shields.io/badge/Taxonomy-Revised%20Bloom's%20L1--L6-059669?style=for-the-badge" alt="Bloom's Taxonomy">
-  </a>
-  <a href="#key-features">
-    <img src="https://img.shields.io/badge/Compliance-AICTE%20OBE%20Standards-D97706?style=for-the-badge" alt="AICTE OBE">
-  </a>
-  <a href="#environment-configuration">
-    <img src="https://img.shields.io/badge/LLM%20Engine-Multi--Provider%20Failover-7C3AED?style=for-the-badge" alt="Multi-LLM Engine">
-  </a>
-</p>
+**Turn a course syllabus into a balanced, Bloom's-Taxonomy-calibrated, college-formatted question paper in minutes.**
+
+> **License:** Free for personal, academic and educational use. Selling, reselling or offering this software as a paid service is not permitted without written consent from Pranav Suryawanshi ([pranavsuryawanshi955@gmail.com](mailto:pranavsuryawanshi955@gmail.com)). See [LICENSE](LICENSE).
+
+## Contents
+1. [Why BloomCraft](#why-bloomcraft)
+2. [Who it is for](#who-it-is-for)
+3. [What it does](#what-it-does)
+4. [How it works](#how-it-works)
+5. [Bloom's levels used](#blooms-levels-used)
+6. [Setup](#setup)
+7. [In-app user guide](#in-app-user-guide)
+8. [Session and progress behaviour](#session-and-progress-behaviour)
+9. [Security and privacy](#security-and-privacy)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
-> **University-grade automated examination engineering studio adhering to Revised Bloom's Taxonomy, automated syllabus ingestion, cognitive blueprinting, outcome-based education (OBE) standards, and AICTE examination reform policies.**
->
-> 🚀 **Live Production Deployment**: [https://blooms-taxonomy.onrender.com/](https://blooms-taxonomy.onrender.com/)
+## Why BloomCraft
+
+Setting a good question paper is slow and hard to get right. Faculty usually face these problems:
+
+- **Time:** reading the syllabus, writing fresh questions every semester, and formatting the paper in the college style takes hours.
+- **Uneven difficulty:** papers often lean on simple recall (remember / define) and rarely test applying, analysing or designing, so they do not match the intended learning outcomes.
+- **Accreditation evidence:** NBA, NAAC and AICTE outcome-based education (OBE) expect each question mapped to a **Course Outcome (CO)** and a **Bloom's level**. Doing this mapping by hand in spreadsheets is tedious and error-prone.
+- **Unit coverage:** it is easy to over-weight some units and miss others.
+- **Marking consistency:** evaluators need a step-wise scheme, which is usually written separately and late.
+- **Formatting:** every college has its own header, logo, numbering and instruction style that must be reproduced exactly.
+
+BloomCraft solves these by generating the paper **from your own syllabus**, planning the cognitive mix **before** writing questions, tagging every question with its Bloom level and CO, checking the result against your targets, and exporting in **your college's format**.
 
 ---
 
-> [!IMPORTANT]
-> ### 🛡️ Commercial Use & Resale Restriction Notice
-> Copyright &copy; 2026 **Pranav Suryawanshi** ([@PranavSuryawanshi11](https://github.com/PranavSuryawanshi11)). All rights reserved.
-> 
-> This software is distributed under a **Strict Non-Commercial Source-Available License**.
-> - **Free for Personal, Academic & Educational Use**: Faculty, researchers, and students may inspect, test, and run this system for learning and non-commercial research.
-> - **Commercial Sale Strictly Prohibited**: **No individual, business, or organization may sell, resell, lease, sublicense, monetize, or offer this software as a paid SaaS/cloud service without explicit prior written consent from Pranav Suryawanshi.**
-> - For enterprise licensing, institutional deployment permissions, or commercial authorization, contact: [`pranavsuryawanshi955@gmail.com`](mailto:pranavsuryawanshi955@gmail.com).
+## Who it is for
+
+BloomCraft is built **for teachers (faculty) only**. It helps a subject teacher create a question paper quickly from their own syllabus, without writing and formatting it by hand.
+
+A teacher can use it for:
+
+- Unit tests, in-semester, mid-semester and end-semester papers (built-in presets for these are included).
+- Papers in their own college's format, by uploading an old paper or building a custom template.
+- Papers where every question already carries its Bloom's level and Course Outcome (CO), with an analytics report and marking scheme.
+
+Each teacher signs in to a private account with their own paper history, templates and question sets. A guest option is available to try the system (one paper per device).
 
 ---
 
-## 📑 Table of Contents
+## What it does
 
-- [Live Demo](#live-demo)
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Key Features](#key-features)
-- [Cognitive Tiers (Bloom's Taxonomy)](#cognitive-tiers-blooms-taxonomy)
-- [Project Directory Structure](#project-directory-structure)
-- [Quick Start & Installation](#quick-start-installation)
-- [Environment Configuration](#environment-configuration)
-- [REST API Specifications](#rest-api-specifications)
-- [Automated Test Suite](#automated-test-suite)
-- [Security & Confidentiality](#security-confidentiality)
-- [Contributing & Code of Conduct](#contributing-code-of-conduct)
-- [License & Commercial Rights](#license-commercial-rights)
+- **Reads your syllabus** from a PDF, TXT or MD file, or from text you paste, and splits it into units, topics and Course Outcomes.
+- **Uses ready or custom templates:** built-in college and exam presets (RCPIT, SVKM DJSCE, in-semester, unit test, semester end and more), **or** upload an old paper to copy its format, **or** build your own template manually.
+- **Plans a blueprint:** total marks, duration, sections, per-question marks, internal choices (OR), unit-wise marks weightage and a Bloom's target mix (L1 to L6).
+- **Generates the paper** with AI (free-tier providers with automatic failover), or from your own uploaded question set / question bank, or a hybrid of both.
+- **Lets you edit everything** in the Paper Studio: change a question, regenerate one or all, add technical diagrams, and customise layout.
+- **Validates and reports:** cognitive depth index, target vs actual Bloom's mix with deviation, CO attainment and a step-wise evaluation rubric.
+- **Exports** to Word (.doc), print / Save as PDF, or JSON, and **archives** every paper in your private Past Papers history.
+- **Guides new users** with an in-app step-by-step guide.
 
 ---
 
-<a id="live-demo"></a>
-## 🌐 Live Demo & Deployment
+## How it works
 
-The system is deployed and available live on Render:
-
-👉 **[https://blooms-taxonomy.onrender.com/](https://blooms-taxonomy.onrender.com/)**
-
-Academic faculty and evaluators can explore the complete examination engineering workflow, upload syllabus documents, configure cognitive blueprint matrices, and synthesize AICTE-compliant question papers directly in the cloud.
-> [!NOTE]
-> **Ephemeral Storage Notice on Render Free Tier**: The live demo on Render uses an ephemeral disk. Any faculty test accounts or examination history generated during evaluation will reset when the free-tier service restarts or redeploys. For persistent institutional use, configure persistent disk storage or run locally with SQLite.
-
----
-
-<a id="overview"></a>
-## 🌟 Overview
-
-**BloomCraft AI** is an intelligent, full-stack examination engineering workbench designed for university faculty and academic institutions. It transforms unstructured course syllabi into balanced, high-fidelity examination papers calibrated across cognitive learning tiers (L1 Remember through L6 Create), mapped directly to Course Outcomes (COs), and rendered with technical schematic diagrams and official institutional export formats.
-
----
-
-<a id="system-architecture"></a>
-## 🏗️ System Architecture
-
-```mermaid
-flowchart TD
-    subgraph Client["Frontend Client (Academic Workbench)"]
-        UI["Web Interface (HTML5 / Modern CSS / Vanilla ES6)"]
-        AuthM["Auth & Isolation Manager"]
-        BP_UI["Blueprint & Cognitive Slider Matrix"]
-        Studio["Paper Studio & Schematic Preview"]
-    end
-
-    subgraph Server["Backend REST API (Flask Server)"]
-        Router["app.py (REST API Endpoints)"]
-        AuthSvc["auth_history_service.py (PBKDF2-SHA256 Auth & History)"]
-        Parser["syllabus_parser.py (PDF & Text Extraction)"]
-        Engine["bloom_engine.py (Taxonomy Engine & Calibration)"]
-        BP_Engine["blueprint_builder.py (Section & Choice Allocation)"]
-        QGen["question_generator.py (Prompt Engineering)"]
-        LLM["llm_client.py (Lightweight Native Free-Tier Failover)"]
-        Diag["figure_generator.py & diagram_ai.py (Algorithmic SVG Synthesis)"]
-        Export["export_service.py (Word DOCX & OBE Matrices)"]
-    end
-
-    subgraph LLM_Providers["Multi-Provider LLM Tier"]
-        Groq["Groq Cloud (Llama 3.3 70B, Mixtral)"]
-        Cerebras["Cerebras (High-Speed Llama 3.1)"]
-        Mistral["Mistral AI (Mistral Small / Codestral)"]
-        OpenRouter["OpenRouter (Free Catalog)"]
-    end
-
-    UI --> Router
-    Router --> AuthSvc
-    Router --> Parser
-    Router --> Engine
-    Router --> BP_Engine
-    Router --> QGen
-    QGen --> LLM
-    LLM --> Groq
-    LLM --> Cerebras
-    LLM --> Mistral
-    LLM --> OpenRouter
-    QGen --> Diag
-    Router --> Export
+```
+ Syllabus (file or pasted text)
+        |
+        v
+ 1. INGEST      Parse into units, topics, COs; you review and correct
+        |
+        v
+ 2. BLUEPRINT   Template (preset / uploaded college paper / custom)
+                + marks, sections, OR choices, unit weightage
+                + Bloom's target mix (L1 to L6, totals 100%)
+        |
+        v
+ 3. GENERATE    Questions are written for each slot to match the unit,
+                Bloom's level, CO and marks (AI, your question bank, or hybrid)
+        |
+        v
+ 4. STUDIO      Review, edit, regenerate, add diagrams, adjust layout
+        |
+        v
+ 5. ANALYTICS   Target vs actual Bloom's, CO attainment, evaluation rubric
+        |
+        v
+ 6. EXPORT      Word / PDF (print) / JSON  +  saved to Past Papers
 ```
 
----
+**Under the hood**
 
-<a id="key-features"></a>
-## 🚀 Key Features
-
-1. **Revised Bloom's Taxonomy Calibration**: Automatically constructs cognitive distributions ensuring balanced assessment across all 6 tiers:
-   - **L1** Remember &bull; **L2** Understand &bull; **L3** Apply
-   - **L4** Analyze &bull; **L5** Evaluate &bull; **L6** Create
-2. **Automated Syllabus & PDF Ingestion**: Extracts text, modules, chapters, and course objectives from course syllabi using `pdfplumber`.
-3. **Outcome-Based Blueprint Builder**: Customizes marks, sections, internal choices, and Course Outcome (CO1–CO6) distributions with real-time cognitive index calibration.
-4. **Multi-Provider Free-Tier LLM Architecture**: Built-in resilient dynamic failover and discovery across free-tier providers:
-   - **Groq Cloud** (Llama 3.3, Mixtral)
-   - **OpenRouter** (Free-tier catalog)
-   - **Cerebras Cloud** (Ultra-fast Llama models)
-   - **Mistral AI** (Mistral Small / Codestral)
-5. **Technical Figure & Schematic Generator**: Synthesizes algorithmic SVG circuit diagrams, network topologies, architecture diagrams, and scientific schematics with zero external graphic dependencies.
-6. **University Examination Export**: Generates production-ready Microsoft Word (`.docx`) documents with institutional headers, course outcome mapping matrices, and clean CSS print formatting.
-7. **Faculty Authentication & Isolated Archive**: Secure faculty login and sign-up with PBKDF2 password hashing and private, per-teacher examination question paper history.
+- **Frontend:** a single-page web app (HTML, CSS and vanilla JavaScript) with four stages: Syllabus, Blueprint, Studio and Analytics.
+- **Backend:** a Flask (Python) REST API that parses syllabi, builds blueprints, calibrates Bloom's distribution, generates questions and figures, and creates the Word export.
+- **AI providers:** Groq, OpenRouter, Cerebras and Mistral free tiers. If one is busy or fails, the next configured provider is used automatically. At least one API key is required.
+- **Database:** PostgreSQL stores faculty accounts, sessions, generated papers, question sets and custom templates.
+- **Diagrams:** technical figures (circuits, networks, architecture and similar) are produced as SVG.
 
 ---
 
-<a id="cognitive-tiers-blooms-taxonomy"></a>
-## 📊 Cognitive Tiers (Bloom's Taxonomy)
+## Bloom's levels used
 
-| Level | Cognitive Tier | Primary Verbs / Stems | Assessment Objective |
+| Level | Tier | Typical verbs | What it tests |
 | :---: | :--- | :--- | :--- |
-| **L1** | **Remember** | *Define, List, State, Recall, Identify* | Retrieval of foundational definitions, facts, and core concepts |
-| **L2** | **Understand**| *Explain, Describe, Illustrate, Summarize* | Comprehension and interpretation of principles and workflows |
-| **L3** | **Apply** | *Calculate, Implement, Solve, Execute* | Applying theoretical techniques to solve concrete engineering problems |
-| **L4** | **Analyze** | *Differentiate, Compare, Deconstruct* | Breaking down complex systems and diagnosing structural components |
-| **L5** | **Evaluate** | *Assess, Justify, Appraise, Validate* | Critical evaluation, trade-off analysis, and standard benchmarking |
-| **L6** | **Create** | *Design, Synthesize, Formulate, Construct* | Designing novel architectures, models, schematics, and algorithms |
+| **L1** | Remember | Define, List, State, Identify | Recall of facts and definitions |
+| **L2** | Understand | Explain, Describe, Summarize | Comprehension of concepts |
+| **L3** | Apply | Calculate, Solve, Implement | Using techniques on concrete problems |
+| **L4** | Analyze | Compare, Differentiate, Deconstruct | Breaking down systems and relationships |
+| **L5** | Evaluate | Assess, Justify, Validate | Judging and trade-off analysis |
+| **L6** | Create | Design, Formulate, Construct | Producing new designs and solutions |
+
+Presets for the target mix: **Balanced Academic**, **Analytical Focus**, **Foundational** and **Advanced Synthesis**, or set your own with sliders.
 
 ---
 
-<a id="project-directory-structure"></a>
-## 📁 Project Directory Structure
+## Setup
 
-```text
-├── .github/
-│   ├── workflows/
-│   │   └── ci.yml                     # Continuous Integration workflow (Python 3.11)
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md              # Standardized bug reporting template
-│   │   └── feature_request.md         # Feature enhancement proposal template
-│   └── pull_request_template.md       # PR checklist and submission guidelines
-│
-├── backend/
-│   ├── app.py                         # Flask REST API server and static web host
-│   ├── config.py                      # Cognitive presets, Bloom levels, and university templates
-│   ├── .env.example                   # Backend environment configuration template
-│   ├── core/
-│   │   ├── auth_history_service.py    # Faculty authentication, PBKDF2 hashing & history archive
-│   │   ├── bloom_engine.py            # Bloom distribution validators and cognitive index calculations
-│   │   ├── blueprint_builder.py       # Examination blueprint compiler and section allocation
-│   │   ├── diagram_ai.py              # AI-assisted SVG technical diagram synthesis
-│   │   ├── export_service.py          # Word DOCX generation with AICTE matrix tables
-│   │   ├── figure_generator.py        # Algorithmic SVG diagram rendering engine
-│   │   ├── figure_planner.py          # Prompt analysis and diagram candidate identification
-│   │   ├── llm_client.py              # Lightweight multi-provider LLM client with runtime failover
-│   │   ├── question_generator.py      # Prompt builder and question synthesizer
-│   │   └── syllabus_parser.py         # PDF syllabus extractor and module segmenter
-│   ├── data/
-│   │   ├── bloom_stems.json           # Action verbs and stems for each Bloom cognitive level
-│   │   ├── sample_syllabi.json        # Preloaded reference syllabi for quick demonstration
-│   ├── test_auth_history_integration.py # Auth and history service integration tests
-│   ├── test_e2e_live.py               # End-to-end question paper workflow tests
-│   └── test_generator.py              # Cognitive paper generation unit tests
-│
-├── tests/                             # Automated test suite (Smoke, Unit, Mocked LLM)
-│   ├── conftest.py                    # Pytest test fixtures and Flask app harness
-│   ├── test_smoke.py                  # API endpoints and route availability tests
-│   ├── test_generation.py             # Deterministic blueprint & mocked LLM tests
-│   └── test_e2e_live_skipped.py       # Live E2E test runner (conditional)
-│
-├── frontend/
-│   ├── index.html                     # Single-page application interface and auth portal
-│   ├── css/
-│   │   ├── components.css             # Component library (badges, modals, form controls, cards)
-│   │   ├── main.css                   # Core design system, typography, and color variables
-│   │   └── print.css                  # Print-specific styling for clean question paper export
-│   └── js/
-│       ├── app.js                     # Global state, workflow controller, notifications
-│       ├── auth.js                    # Faculty login/signup session controller and history modal
-│       ├── blueprint.js               # Blueprint matrix editor and cognitive sliders
-│       ├── custom_sets.js             # Custom question sets manager
-│       ├── export.js                  # Document export and client-side formatting
-│       ├── generator.js               # Question generation and regeneration controller
-│       └── syllabus.js                # Syllabus upload and text ingestion handler
-│
-├── .env.example                       # Root environment variables template
-├── .gitignore                         # Comprehensive Git exclusion rules
-├── CODE_OF_CONDUCT.md                 # Contributor Covenant Code of Conduct
-├── CONTRIBUTING.md                    # Developer and contribution guidelines
-├── LICENSE                            # Strict Non-Commercial Source-Available License
-├── package_project.py                 # Clean distribution zip packaging utility
-├── pytest.ini                         # Pytest test discovery and configuration
-├── requirements.txt                   # Production Python dependencies
-├── requirements-dev.txt               # Development, testing, and linting dependencies
-├── CHANGELOG.md                       # Release notes and version history
-├── SECURITY.md                        # Responsible vulnerability disclosure policy
-└── README.md                          # Project documentation
-```
+### 1. Requirements
+- Python **3.9+**
+- A **PostgreSQL** database
+- At least one free LLM API key (Groq, OpenRouter, Cerebras or Mistral)
 
----
-
-<a id="quick-start-installation"></a>
-## 🛠️ Quick Start & Installation
-
-### Step 1: Check Prerequisites
-- Python **3.9+** installed (`python --version`)
-- Git installed (`git --version`)
-
-### Step 2: Clone the Repository
+### 2. Install
 ```bash
 git clone https://github.com/PranavSuryawanshi11/Blooms-Taxonomy.git
 cd Blooms-Taxonomy
-```
 
-### Step 3: Create & Activate Virtual Environment
-- **Windows (Command Prompt / PowerShell):**
-  ```powershell
-  python -m venv venv
-  .\venv\Scripts\activate
-  ```
-- **macOS / Linux:**
-  ```bash
-  python3 -m venv venv
-  source venv/bin/activate
-  ```
+python -m venv venv
+# Windows:      .\venv\Scripts\activate
+# macOS/Linux:  source venv/bin/activate
 
-### Step 4: Install Dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-### Step 5: Start the Backend Server
+### 3. Configure
+Copy `backend/.env.example` to `backend/.env` and fill it in:
+
+```ini
+# At least ONE LLM key is required
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+CEREBRAS_API_KEY=
+MISTRAL_API_KEY=
+
+# PostgreSQL (required)
+DATABASE_URL=postgresql://bloom:change-this-password@localhost:5432/bloomcraft
+
+# Optional
+# BLOOMCRAFT_LLM_ORDER=mistral,cerebras,groq,openrouter
+# PORT=5000
+# TRUST_PROXY=1   # when behind nginx / Render / Railway
+```
+
+Free key portals: [Groq](https://console.groq.com/keys) (recommended) &bull; [OpenRouter](https://openrouter.ai/keys) &bull; [Cerebras](https://cloud.cerebras.ai) &bull; [Mistral](https://console.mistral.ai)
+
+### 4. Run
 ```bash
 python backend/app.py
 ```
+Open **http://127.0.0.1:5000**.
 
-### Step 6: Access the Academic Studio
-Open your browser and navigate to:
-```text
-http://127.0.0.1:5000
-```
-
----
-
-<a id="environment-configuration"></a>
-## ⚙️ Environment Configuration
-
-BloomCraft AI supports free-tier LLM providers out of the box with zero required credit cards. Environment variables are managed using `.env` files.
-
-### 1. Initialize Your Environment File
-
-Copy the provided [`.env.example`](.env.example) to `.env`:
-
-- **Windows PowerShell:**
-  ```powershell
-  Copy-Item .env.example .env
-  ```
-- **macOS / Linux / Bash:**
-  ```bash
-  cp .env.example .env
-  ```
-
-### 2. Supported Free-Tier Providers Matrix
-
-You only need **at least ONE** free-tier API key configured to generate examination papers:
-
-| Provider | Supported Models | Free Tier Portal | Key Highlights |
-| :--- | :--- | :--- | :--- |
-| **Groq Cloud** *(Recommended)* | `llama-3.3-70b-versatile`, `mixtral-8x7b-32768` | [console.groq.com/keys](https://console.groq.com/keys) | High speed (~300 tokens/sec), generous free tier limits |
-| **OpenRouter** | `:free` catalog (DeepSeek, Llama, Qwen) | [openrouter.ai/keys](https://openrouter.ai/keys) | Access to dozens of open-source models at zero cost |
-| **Cerebras Cloud** | `llama3.1-8b`, `llama3.1-70b` | [cloud.cerebras.ai](https://cloud.cerebras.ai) | Ultra-low latency wafer-scale inference engine |
-| **Mistral AI** | `mistral-small-latest`, `codestral-latest` | [console.mistral.ai](https://console.mistral.ai) | Free Experiment plan with high academic reasoning |
-
-
-> [!NOTE]
-> **Provider Priority vs. Recommendation**: While **Groq Cloud** is marked as *(Recommended)* due to inference speed and generous free limits, the engine's built-in default fallback priority sequence is `mistral,cerebras,groq,openrouter` if multiple keys are provided. You can customize your preference using `BLOOMCRAFT_LLM_ORDER` in `.env`.
-
-### 3. Environment Variables Reference
-
-Edit `.env` in the project root:
-
-```ini
-# =========================================================================
-# BloomCraft AI - Environment Configuration
-# =========================================================================
-
-# Groq Cloud API Key (Recommended)
-GROQ_API_KEY=your_groq_api_key_here
-
-# OpenRouter API Key (Optional)
-OPENROUTER_API_KEY=
-
-# Cerebras Cloud API Key (Optional)
-CEREBRAS_API_KEY=
-
-# Mistral AI API Key (Optional)
-MISTRAL_API_KEY=
-
-# Optional: Preferred Provider Failover Order (default: mistral,cerebras,groq,openrouter)
-BLOOMCRAFT_LLM_ORDER=mistral,cerebras,groq,openrouter
-
-# Optional: Server Port & Host Configuration
-PORT=5000
-FLASK_DEBUG=0
-```
-
-> **🛡️ Security Best Practice**: Secret API credentials belong strictly in your local `.env` file, which is excluded from version control via [`.gitignore`](.gitignore). A template is provided in [`.env.example`](.env.example) for reference.
-
----
-
-<a id="rest-api-specifications"></a>
-## 🔌 REST API Specifications
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register new faculty profile with encrypted credentials |
-| `POST` | `/api/auth/login` | Authenticate faculty member and issue session token |
-| `GET`  | `/api/auth/me` | Fetch authenticated faculty profile information |
-| `POST` | `/api/upload-syllabus` | Parse and ingest syllabus from PDF or raw plain text |
-| `POST` | `/api/build-blueprint` | Compile balanced examination blueprint with CO allocations |
-| `POST` | `/api/generate-paper` | Synthesize complete examination paper with Bloom calibration |
-| `POST` | `/api/generate-figure` | Algorithmic technical diagram generation (SVG) |
-| `POST` | `/api/export-docx` | Export paper to styled Microsoft Word (`.docx`) with AICTE matrix |
-| `GET`  | `/api/history` | Retrieve private archived examination papers for logged-in faculty |
-
----
-
-<a id="automated-test-suite"></a>
-## 🧪 Automated Test Suite
-
-To verify backend modules, cognitive calibration, and user authentication isolation:
+**Docker alternative** (starts the app and PostgreSQL together):
 ```bash
-# Test Faculty Authentication and Isolated Paper History
-# Run Unit & Smoke Test Suite with Pytest (Offline & Fast)
-pip install -r requirements-dev.txt
-pytest tests/ -v
-
-# Run Legacy Integration Test Scripts
-python backend/test_auth_history_integration.py
-
-# Test Question Generation & Bloom Distribution Validation
-python backend/test_generator.py
-
-# Test End-to-End Live Workflow (requires valid API key in .env)
-python backend/test_e2e_live.py
-```
-
----
-
-<a id="security-confidentiality"></a>
-## 🔒 Security & Confidentiality
-
-- **Zero-Credential Commits**: Secret `.env` files are ignored across all folders by `.gitignore`.
-- **Faculty Data Isolation**: Faculty accounts, sessions, guest devices, generated history, question sets and custom templates are stored in **PostgreSQL** (`DATABASE_URL`). Passwords and recovery codes are hashed with Argon2id; session tokens are stored only as SHA-256 digests and stay valid for 90 days (sliding).
-- **PBKDF2 Password Hashing**: Passwords are saved with cryptographically secure salted hashes (`PBKDF2-SHA256` with 120,000 iterations).
-- **Responsible Disclosure**: See [SECURITY.md](SECURITY.md) for vulnerability reporting.
-
----
-
-<a id="contributing-code-of-conduct"></a>
-## 🤝 Contributing & Code of Conduct
-
-We welcome community feedback, issue reports, and non-commercial contributions under our source-available license.
-- Please review our [CONTRIBUTING.md](CONTRIBUTING.md) before submitting Pull Requests.
-- Participants are expected to adhere to the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-
----
-
-<a id="license-commercial-rights"></a>
-## 📄 License & Commercial Rights
-
-Copyright &copy; 2026 **Pranav Suryawanshi** ([@PranavSuryawanshi11](https://github.com/PranavSuryawanshi11)). All rights reserved.
-
-This project is released under the **BloomCraft AI Non-Commercial Source-Available License**:
-- **Free for Non-Commercial Use**: You are free to view, study, test, and run this software for personal, academic, and non-commercial institutional research.
-- **Strict Commercial Prohibition**: **No individual, business, or entity may sell, resell, lease, sublicense, monetize, or offer this software or derivative works as a paid commercial product or SaaS service without prior explicit written consent from Pranav Suryawanshi.**
-
-For complete legal terms, review the [LICENSE](LICENSE) file. For commercial licensing inquiries or enterprise permissions, contact:
-**[`pranavsuryawanshi955@gmail.com`](mailto:pranavsuryawanshi955@gmail.com)**.
-
-
-## PostgreSQL setup (required)
-
-BloomCraft stores everything in PostgreSQL. Tables are created automatically on first start.
-
-```bash
-# Option A - Docker (database + app, data kept in a named volume)
 POSTGRES_PASSWORD=choose-a-strong-one docker compose up -d
-
-# Option B - your own PostgreSQL
-createdb bloomcraft
-export DATABASE_URL=postgresql://user:password@localhost:5432/bloomcraft
-cd backend && python app.py
 ```
 
-Back up regularly with `pg_dump bloomcraft > backup.sql`.
+---
 
-## Accounts and guest access
+## In-app guide (pop-ups on the exact control)
 
-- **Faculty accounts**: password rules are 8+ characters with letters and numbers. A one-time **recovery code** is shown at registration and is required to reset a forgotten password. Five wrong passwords lock the account for 15 minutes.
-- **Continue as Guest**: one question paper per device. The device is recognised by an id kept in the browser (local storage plus a long-lived cookie); clearing both resets it, so use faculty accounts where strict limits matter.
+There is no long manual. Small pop-ups **point at the exact control they explain** (a highlighted box with an arrow), so a teacher is told what to do at the place where they do it. Each stage has a short tour that starts the first time the stage is opened. Use **Next / Back**, **Skip** or the close button, and the **Guide** button in the top bar to replay the current stage's tour at any time.
 
-## New generation options
+| Stage | Where the pop-ups appear |
+| :--- | :--- |
+| **Stage 1: Syllabus** | **Upload box** (PDF/TXT/MD) &rarr; **sample syllabus chips** &rarr; each course field one by one: **Course Code**, **Department / Faculty**, **Course Title**, **Academic Year**, **Year / Semester** &rarr; **paste box** (for short or scanned files: copy the text, start each unit with `UNIT 1: Title`) &rarr; **Parse & Ingest Curriculum Structure** button. After parsing, more pop-ups appear at the **unit / topic / CO counts**, the **Modules** and **Extracted Document** views, and the **continue to Stage 2** button. |
+| **Stage 2: Template & blueprint** | **Template list** &rarr; **Add Your College Template** (upload an old paper) &rarr; **Custom Template** (build manually) &rarr; marks / duration / title &rarr; question-set upload and source &rarr; unit weightage &rarr; **Auto-Balance** and Bloom's sliders (100%) &rarr; sections and marks &rarr; **Generate Examination Paper**. When the college-template window opens, pop-ups appear at its **upload box**, the **Build the template manually** button, and **Save & Use Template**. |
+| **Stage 3: Paper Studio** | Question **regenerate / edit** icons &rarr; paper **validation checklist** &rarr; **Customize Layout** &rarr; **Regenerate All** &rarr; **Word** export &rarr; **Print / Save PDF**. |
+| **Stage 4: Analytics** | Cognitive depth index &rarr; target vs actual Bloom's mix (deviation) &rarr; CO coverage &rarr; scheme of evaluation. |
 
-- **Q.1 (a), (b), (c) numbering** per section, with per-sub-question marks.
-- **OR questions**: tick which questions get an OR alternative and enter the OR marks yourself.
-- **Unit-wise marks weightage** and **unit-wise Bloom levels** (no level ticked = unrestricted).
-- **Upload Question Set** (PDF, DOCX, TXT, MD, CSV, JSON): unit names, CO and PO are derived from the questions, then press *Generate Question Paper*.
+Each tour opens automatically only once per browser.
 
-## Add your college template (copy an old question paper)
+---
 
-In the Blueprint tab press **Add Your College Template**, then upload any old question paper from your college
-(text PDF, Word `.docx`, or a photo/scan). BloomCraft reads it and shows a review screen with:
+## Session and progress behaviour
 
-- every **header line** (society, college name, tagline, affiliation, regional-language title, programme, exam title) with its own font size, bold / italic, colour and alignment, in the original order
-- the **logo(s)** with left / centre / right position and size (you can replace or add one)
-- the **course / time / marks / roll-number rows** exactly as laid out
-- the **instructions**, the **sections** (questions per section, marks of each sub-question, which have OR and their marks)
-- the **numbering style** (`Q.1 (a)`, `Q.1 a)`, `Q1`, `1.` ...), font, base size, page margins and the rule under the header
+- **Moving between stages or refreshing the page:** your work resumes exactly where you left off: the stage you were on, the syllabus, course details, blueprint, Bloom's distribution and the generated paper are all restored.
+- **Closing the browser (or the tab):** the session ends. You must **sign in again**, and the workspace starts clean. Papers you generated stay in your **Past Papers** archive and can be reopened after signing in.
+- **Signing out** clears the saved workspace for that browser session.
+- Progress is kept per signed-in user for the current browser session only, so one faculty member never sees another's in-progress work.
 
-Fix anything that was misread, press **Save & Use Template**, and it appears under *My College Templates*. New papers
-use the saved header and logo on screen and in the Word export. Templates are private to your account.
+> Export (Word / JSON) anything you need before closing the browser.
 
-Scanned PDFs and photos need OCR: install Tesseract (`apt install tesseract-ocr`; the Docker image includes it).
-Text PDFs and Word files do not need it and give the most exact copy.
+---
+
+## Security and privacy
+
+- Each faculty member has a **private, isolated** archive of papers, question sets and templates.
+- Passwords are stored as salted hashes; the recovery code (shown once) is the only way to reset a forgotten password.
+- API keys belong only in `backend/.env`, which is excluded from version control. Never commit it.
+- Guest use is limited to one paper per device.
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+| :--- | :--- |
+| `DATABASE_URL is not set` | Add `DATABASE_URL` to `backend/.env` |
+| Paper generation fails | Check that at least one LLM key is set and valid; try again if the service is busy |
+| Syllabus upload finds few or no units | Paste the text manually and add `UNIT 1: ...` headings (guide step 1b) |
+| Marks warning in the Studio | Section marks do not equal the total; fix marks in Stage 2 or on the questions |
+| A stage guide does not appear again | It opens automatically once per stage per browser; click the **Guide** button to replay it |
+| Asked to sign in after closing the browser | Expected: sessions end when the browser closes |

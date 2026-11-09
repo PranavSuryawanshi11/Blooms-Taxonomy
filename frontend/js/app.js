@@ -147,6 +147,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   await loadPresets();
   await loadSampleSyllabi();
+  // Resume exactly where the faculty member left off (refresh / reload within the same browser session)
+  if (window.SessionModule) {
+    window.SessionModule.restore();
+    window.SessionModule._booted = true;
+  }
 });
 
 // Tab Routing System
@@ -162,7 +167,7 @@ function initTabs() {
 
 function switchTab(tabId) {
   window.AppState.currentTab = tabId;
-window.switchTab = switchTab;
+  if (window.StageGuide) window.StageGuide.onTab(tabId);
 
   // Update tab navigation UI
   document.querySelectorAll(".step-tab").forEach(tab => {

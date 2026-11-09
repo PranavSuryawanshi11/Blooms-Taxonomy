@@ -18,7 +18,11 @@ const AuthModule = {
     this._initialized = true;
 
     this.bindEvents();
-    const savedToken = localStorage.getItem("bloom_faculty_token");
+    // Sessions live in sessionStorage: refreshing keeps you signed in, closing the browser/tab signs you out.
+    // Remove any long-lived login left behind by older versions.
+    localStorage.removeItem("bloom_faculty_user");
+    localStorage.removeItem("bloom_faculty_token");
+    const savedToken = sessionStorage.getItem("bloom_faculty_token");
     let restored = false;
     if (savedToken) {
       try {
@@ -32,13 +36,14 @@ const AuthModule = {
           restored = true;
         } else if (res.status === 401) {
           // Token explicitly rejected by server
-          localStorage.removeItem("bloom_faculty_user");
-          localStorage.removeItem("bloom_faculty_token");
+          sessionStorage.removeItem("bloom_faculty_user");
+          sessionStorage.removeItem("bloom_faculty_token");
+          if (window.SessionModule) window.SessionModule.clear();
         }
       } catch (e) {
         console.warn("Session check failed (backend may be reloading):", e);
         // Do NOT wipe localStorage on network glitch or during server reload!
-        const savedUserStr = localStorage.getItem("bloom_faculty_user");
+        const savedUserStr = sessionStorage.getItem("bloom_faculty_user");
         if (savedUserStr) {
           try {
             const savedUser = JSON.parse(savedUserStr);
@@ -51,6 +56,16 @@ const AuthModule = {
     }
     if (!restored) {
       this.showAuthGate();
+    }
+    const post = sessionStorage.getItem("bloom_post_reload");
+    if (post) {
+      sessionStorage.removeItem("bloom_post_reload");
+      if (post === "signup") {
+        const t = document.getElementById("tab-btn-signup");
+        if (t) t.click();
+      } else if (post === "signedout") {
+        window.showToast("Signed out successfully.", "info");
+      }
     }
   },
 
@@ -304,8 +319,6 @@ const AuthModule = {
       toSignup.addEventListener("click", async () => {
         document.getElementById("modal-guest-limit").classList.remove("active");
         await this.logout(true);
-        const t = document.getElementById("tab-btn-signup");
-        if (t) t.click();
       });
     }
 
@@ -522,8 +535,14 @@ const AuthModule = {
     window.AppState.currentUser = user;
     window.AppState.authToken = token;
 
-    localStorage.setItem("bloom_faculty_user", JSON.stringify(user));
-    localStorage.setItem("bloom_faculty_token", token);
+    sessionStorage.setItem("bloom_faculty_user", JSON.stringify(user));
+    sessionStorage.setItem("bloom_faculty_token", token);
+
+    // Fresh sign-in after the app has booted: start with a clean workspace and begin tracking progress
+    if (window.SessionModule && window.SessionModule._booted) {
+      window.SessionModule.clear();
+      window.SessionModule.start();
+    }
 
     this.updateNavbarUserUI();
     this.updateSyllabusUserBanner();
@@ -541,8 +560,9 @@ const AuthModule = {
       console.warn("Logout request failed:", e);
     }
 
-    localStorage.removeItem("bloom_faculty_user");
-    localStorage.removeItem("bloom_faculty_token");
+    sessionStorage.removeItem("bloom_faculty_user");
+    sessionStorage.removeItem("bloom_faculty_token");
+    if (window.SessionModule) window.SessionModule.clear();
 
     this.currentUser = null;
     this.authToken = null;
@@ -556,7 +576,9 @@ const AuthModule = {
     }
     if (window.TemplateImport) window.TemplateImport.populateSelect("rcpit_sem_65");
     this.showAuthGate();
-    if (!silent) window.showToast("Signed out successfully.", "info");
+    // Reload so the next sign-in starts with a completely clean workspace (nothing from this user stays in memory)
+    try { sessionStorage.setItem("bloom_post_reload", silent ? "signup" : "signedout"); } catch (e) {}
+    window.location.reload();
   },
 
   updateNavbarUserUI() {

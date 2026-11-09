@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- Added stage-wise guide pop-ups shown at the top of each stage on first visit; reopen with the Guide button. The complete guide opens only on request.
+- Work progress (stage, syllabus, blueprint, paper) now resumes after refresh within the same browser session.
+- Login now lasts for the browser session only; closing the browser requires signing in again.
+- Logout reloads the page so the next user starts with a clean workspace.
+
 ## v5.0.0
 - Added: **Add Your College Template** - upload an old question paper (PDF / Word / scan) and BloomCraft copies the header lines with their styles, the logo(s), the course/time/marks rows, instructions, sections, OR structure and numbering format. Templates are stored per user in PostgreSQL and used by the on-screen paper and the Word export.
 - Added: sub-question numbering Q.1 (a)(b)(c), manual OR questions with their own marks, unit-wise marks weightage and Bloom levels, question-set upload with derived unit / CO / PO and a Generate Question Paper button.
