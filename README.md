@@ -1,4 +1,4 @@
-# BloomCraft AI &mdash; Academic Studio
+# Bloom's Taxonomy &mdash; Academic Studio
 
 **Turn a course syllabus into a balanced, Bloom's-Taxonomy-calibrated, college-formatted question paper in minutes.**
 
